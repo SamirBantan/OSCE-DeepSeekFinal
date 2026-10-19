@@ -1,0 +1,1760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Internal Medicine OSCE Practice Suite</title>
+    <style>
+        /* ===== GLOBAL STYLES ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --navy: #0a2540;
+            --cream: #f8f5f0;
+            --gold: #c9a227;
+            --green: #2e7d32;
+            --red: #c62828;
+            --orange: #ef6c00;
+            --light-navy: #1e3a5f;
+            --shadow: 0 4px 12px rgba(10, 37, 64, 0.12);
+            --radius: 12px;
+        }
+        body {
+            font-family: 'Segoe UI', 'Georgia', 'Times New Roman', serif;
+            background-color: var(--cream);
+            color: var(--navy);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .app-header {
+            background: linear-gradient(135deg, var(--navy) 0%, #0f3460 100%);
+            color: var(--cream);
+            padding: 1.5rem 2rem;
+            text-align: center;
+            border-bottom: 4px solid var(--gold);
+            position: relative;
+            overflow: hidden;
+        }
+        .app-header::before {
+            content: "IM";
+            position: absolute;
+            right: 2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 5rem;
+            font-weight: 900;
+            color: rgba(201, 162, 39, 0.15);
+            letter-spacing: -4px;
+            font-family: 'Georgia', serif;
+            pointer-events: none;
+        }
+        .app-header h1 { font-size: 2rem; font-weight: 700; letter-spacing: 1px; margin-bottom: 0.2rem; font-family: 'Georgia', serif; }
+        .app-header .subtitle { font-size: 1rem; color: #d4c9a8; margin-bottom: 0.2rem; font-style: italic; }
+        .app-header .attribution { font-size: 0.9rem; color: var(--gold); font-weight: 600; letter-spacing: 0.5px; }
+        .nav-sticky {
+            position: sticky; top: 0; z-index: 1000;
+            background: var(--cream);
+            border-bottom: 2px solid var(--navy);
+            box-shadow: 0 2px 8px rgba(10, 37, 64, 0.1);
+            padding: 0.6rem 1.5rem;
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 0.4rem;
+        }
+        .nav-pill {
+            background: transparent; border: 2px solid var(--navy); color: var(--navy);
+            padding: 0.45rem 1.2rem; border-radius: 50px; cursor: pointer;
+            font-size: 0.9rem; font-weight: 600; transition: all 0.25s ease;
+            font-family: inherit; white-space: nowrap;
+        }
+        .nav-pill:hover { background: var(--navy); color: var(--cream); transform: translateY(-1px); }
+        .nav-pill.active { background: var(--navy); color: var(--cream); border-color: var(--navy); box-shadow: 0 2px 8px rgba(10, 37, 64, 0.3); }
+        .nav-pill.mock { border-color: var(--gold); color: var(--gold); }
+        .nav-pill.mock:hover { background: var(--gold); color: var(--navy); }
+        .main-container { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; flex: 1; width: 100%; }
+        .view { display: none; animation: fadeIn 0.4s ease; }
+        .view.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        .home-hero { text-align: center; padding: 2rem 1rem; }
+        .home-hero h2 { font-size: 2.2rem; color: var(--navy); font-family: 'Georgia', serif; margin-bottom: 0.5rem; }
+        .home-hero .tagline { font-size: 1.1rem; color: #5a6b7c; margin-bottom: 1.5rem; font-style: italic; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin: 2rem 0; }
+        .stat-card { background: #fff; border-radius: var(--radius); padding: 1.2rem; box-shadow: var(--shadow); border-top: 4px solid var(--gold); text-align: center; }
+        .stat-card .number { font-size: 2.2rem; font-weight: 800; color: var(--navy); font-family: 'Georgia', serif; }
+        .stat-card .label { font-size: 0.85rem; color: #5a6b7c; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+        .stat-card.matched { border-top-color: var(--green); }
+        .stat-card.related { border-top-color: var(--gold); }
+        .stat-card.notfound { border-top-color: var(--red); }
+        .objectives-box { background: #fff; border-radius: var(--radius); padding: 1.5rem 2rem; box-shadow: var(--shadow); margin: 1.5rem 0; text-align: left; border-left: 6px solid var(--navy); }
+        .objectives-box h3 { color: var(--navy); font-family: 'Georgia', serif; margin-bottom: 0.8rem; font-size: 1.3rem; }
+        .objectives-box ul { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.6rem; }
+        .objectives-box li { padding: 0.5rem 0.8rem; background: var(--cream); border-radius: 8px; font-size: 0.95rem; display: flex; align-items: center; gap: 0.5rem; }
+        .objectives-box li::before { content: "✓"; color: var(--gold); font-weight: 800; font-size: 1.1rem; }
+        .progress-counter-home { background: var(--navy); color: var(--cream); padding: 1rem 2rem; border-radius: 50px; display: inline-block; font-size: 1.1rem; font-weight: 600; margin: 1rem 0; box-shadow: var(--shadow); }
+        .progress-counter-home span { color: var(--gold); font-size: 1.4rem; font-weight: 800; }
+        .disclaimer { background: #fff3e0; border-left: 4px solid var(--orange); padding: 1rem 1.5rem; border-radius: 8px; margin: 2rem 0 1rem; font-size: 0.9rem; color: #5a4a3a; text-align: left; }
+        .disclaimer strong { color: var(--orange); }
+        .howto-section { background: #fff; border-radius: var(--radius); padding: 2rem; box-shadow: var(--shadow); margin-bottom: 1.5rem; }
+        .howto-section h2 { font-family: 'Georgia', serif; color: var(--navy); margin-bottom: 1rem; font-size: 1.5rem; border-bottom: 2px solid var(--gold); padding-bottom: 0.5rem; }
+        .howto-section h3 { color: var(--navy); margin: 1.2rem 0 0.5rem; font-size: 1.1rem; }
+        .howto-section p, .howto-section li { font-size: 0.95rem; color: #3a4a5a; margin-bottom: 0.4rem; }
+        .howto-section ol, .howto-section ul { padding-left: 1.5rem; margin-bottom: 0.8rem; }
+        .howto-section li { margin-bottom: 0.3rem; }
+        .filter-bar { display: flex; flex-wrap: wrap; gap: 0.8rem; margin-bottom: 1.5rem; padding: 1rem; background: #fff; border-radius: var(--radius); box-shadow: var(--shadow); align-items: center; justify-content: center; }
+        .filter-group { display: flex; align-items: center; gap: 0.4rem; }
+        .filter-group label { font-size: 0.85rem; font-weight: 600; color: var(--navy); }
+        .filter-group select { padding: 0.4rem 0.8rem; border-radius: 8px; border: 2px solid #ccd; font-family: inherit; font-size: 0.85rem; background: var(--cream); color: var(--navy); cursor: pointer; }
+        .filter-group select:focus { outline: none; border-color: var(--gold); }
+        .year-group { margin-bottom: 2rem; }
+        .year-group > h3 { font-family: 'Georgia', serif; color: var(--navy); font-size: 1.3rem; margin-bottom: 0.8rem; padding: 0.5rem 1rem; background: var(--navy); color: var(--cream); border-radius: 8px; display: inline-block; }
+        .day-group { margin-bottom: 1.2rem; }
+        .day-group > h4 { color: var(--navy); font-size: 1rem; margin-bottom: 0.5rem; padding-left: 0.5rem; border-left: 4px solid var(--gold); }
+        .station-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.8rem; }
+        .station-card { background: #fff; border-radius: 10px; padding: 0.8rem 1rem; box-shadow: 0 2px 6px rgba(10, 37, 64, 0.08); cursor: pointer; transition: all 0.2s ease; border-left: 4px solid #ccd; position: relative; display: flex; flex-direction: column; gap: 0.2rem; }
+        .station-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(10, 37, 64, 0.15); }
+        .station-card.completed { border-left-color: var(--green); background: #f1f8f1; }
+        .station-card.completed::after { content: "✓"; position: absolute; top: 6px; right: 10px; color: var(--green); font-weight: 800; font-size: 1.1rem; }
+        .station-card .station-num { font-size: 0.75rem; font-weight: 700; color: var(--gold); text-transform: uppercase; letter-spacing: 0.5px; }
+        .station-card .station-title { font-size: 0.92rem; font-weight: 600; color: var(--navy); line-height: 1.3; }
+        .station-card .station-meta { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.2rem; }
+        .badge { font-size: 0.65rem; padding: 0.15rem 0.5rem; border-radius: 50px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
+        .badge.matched { background: #e8f5e9; color: var(--green); }
+        .badge.related { background: #fff8e1; color: var(--gold); }
+        .badge.notfound { background: #ffebee; color: var(--red); }
+        .badge.detailed { background: #e3f2fd; color: #1565c0; }
+        .station-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+        .station-header h2 { font-family: 'Georgia', serif; color: var(--navy); font-size: 1.4rem; flex: 1; }
+        .timer-box { background: var(--navy); color: var(--cream); padding: 0.5rem 1.2rem; border-radius: 50px; font-size: 1.3rem; font-weight: 800; font-variant-numeric: tabular-nums; box-shadow: var(--shadow); transition: background 0.3s ease; letter-spacing: 1px; }
+        .timer-box.green { background: var(--green); }
+        .timer-box.gold { background: var(--gold); color: var(--navy); }
+        .timer-box.orange { background: var(--orange); animation: pulse 1s infinite; }
+        .timer-box.red { background: var(--red); animation: pulse 0.6s infinite; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+        .progress-steps { display: flex; gap: 0.3rem; margin-bottom: 1rem; flex-wrap: wrap; }
+        .step-indicator { flex: 1; min-width: 60px; text-align: center; padding: 0.4rem 0.2rem; border-radius: 8px; font-size: 0.75rem; font-weight: 600; background: #e0e0e0; color: #666; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 0.3px; }
+        .step-indicator.active { background: var(--navy); color: var(--cream); box-shadow: 0 2px 8px rgba(10, 37, 64, 0.3); }
+        .step-indicator.done { background: var(--green); color: #fff; }
+        .step-content { background: #fff; border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow); margin-bottom: 1rem; }
+        .step-content h3 { color: var(--navy); font-family: 'Georgia', serif; margin-bottom: 0.8rem; font-size: 1.2rem; }
+        .step-content .question-text { font-size: 1rem; color: #3a4a5a; margin-bottom: 1rem; font-weight: 500; }
+        .options-list { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
+        .option-item { display: flex; align-items: flex-start; gap: 0.6rem; padding: 0.6rem 0.8rem; border-radius: 8px; border: 2px solid #e0e0e0; cursor: pointer; transition: all 0.15s ease; font-size: 0.92rem; background: var(--cream); user-select: none; }
+        .option-item:hover { border-color: var(--gold); }
+        .option-item.selected { border-color: var(--navy); background: #e8edf3; }
+        .option-item.correct { border-color: var(--green); background: #e8f5e9; }
+        .option-item.incorrect { border-color: var(--red); background: #ffebee; }
+        .option-item input[type="checkbox"], .option-item input[type="radio"] { margin-top: 0.2rem; accent-color: var(--navy); cursor: pointer; flex-shrink: 0; }
+        .feedback-box { padding: 0.8rem 1rem; border-radius: 8px; margin: 0.8rem 0; font-size: 0.9rem; display: none; }
+        .feedback-box.show { display: block; }
+        .feedback-box.correct-feedback { background: #e8f5e9; border-left: 4px solid var(--green); color: #1b5e20; }
+        .feedback-box.incorrect-feedback { background: #ffebee; border-left: 4px solid var(--red); color: #b71c1c; }
+        .feedback-box .highlight { background: #c8e6c9; padding: 0.1rem 0.3rem; border-radius: 4px; font-weight: 600; }
+        .btn-group { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1rem; }
+        .btn { padding: 0.55rem 1.3rem; border-radius: 50px; border: 2px solid transparent; font-family: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; white-space: nowrap; }
+        .btn-primary { background: var(--navy); color: var(--cream); border-color: var(--navy); }
+        .btn-primary:hover { background: var(--light-navy); transform: translateY(-1px); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .btn-gold { background: var(--gold); color: var(--navy); border-color: var(--gold); }
+        .btn-gold:hover { background: #b8911f; transform: translateY(-1px); }
+        .btn-outline { background: transparent; color: var(--navy); border-color: var(--navy); }
+        .btn-outline:hover { background: var(--navy); color: var(--cream); }
+        .btn-sm { padding: 0.35rem 0.9rem; font-size: 0.8rem; }
+        .audio-panel { background: #fff; border-radius: var(--radius); padding: 1rem 1.5rem; box-shadow: var(--shadow); margin: 1rem 0; border-left: 4px solid var(--gold); }
+        .audio-panel h4 { font-size: 0.95rem; color: var(--navy); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+        .audio-controls { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+        .mic-status { font-size: 0.75rem; padding: 0.2rem 0.7rem; border-radius: 50px; background: #e0e0e0; color: #666; font-weight: 600; }
+        .mic-status.listening { background: #ffebee; color: var(--red); animation: pulse 1s infinite; }
+        .mic-status.supported { background: #e8f5e9; color: var(--green); }
+        .transcript-box { background: var(--cream); border-radius: 8px; padding: 0.6rem 0.8rem; margin-top: 0.5rem; font-size: 0.85rem; color: #3a4a5a; min-height: 2rem; border: 1px solid #ddd; font-style: italic; }
+        .degradation-note { font-size: 0.7rem; color: #888; margin-top: 0.3rem; }
+        .model-answer-box { background: #fff; border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow); margin: 1rem 0; border-top: 4px solid var(--gold); display: none; }
+        .model-answer-box.show { display: block; animation: fadeIn 0.5s ease; }
+        .model-answer-box h3 { color: var(--navy); font-family: 'Georgia', serif; margin-bottom: 0.8rem; font-size: 1.2rem; }
+        .model-answer-box .answer-content { font-size: 0.95rem; color: #3a4a5a; line-height: 1.7; white-space: pre-wrap; }
+        .model-answer-box .answer-content .highlight { background: #c8e6c9; padding: 0.1rem 0.3rem; border-radius: 4px; font-weight: 600; }
+        .flashcard-controls { display: flex; flex-wrap: wrap; gap: 0.8rem; margin-bottom: 1.5rem; align-items: center; justify-content: center; }
+        .flashcard-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+        .flashcard { perspective: 1000px; cursor: pointer; min-height: 180px; }
+        .flashcard-inner { position: relative; width: 100%; height: 100%; min-height: 180px; transition: transform 0.6s; transform-style: preserve-3d; }
+        .flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
+        .flashcard-front, .flashcard-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: var(--radius); padding: 1.2rem; display: flex; flex-direction: column; justify-content: center; box-shadow: var(--shadow); overflow-y: auto; }
+        .flashcard-front { background: #fff; border-top: 4px solid var(--navy); }
+        .flashcard-back { background: var(--navy); color: var(--cream); transform: rotateY(180deg); border-top: 4px solid var(--gold); }
+        .flashcard-front .category { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--gold); letter-spacing: 0.5px; margin-bottom: 0.5rem; }
+        .flashcard-front .question { font-size: 0.95rem; font-weight: 600; color: var(--navy); }
+        .flashcard-back .answer { font-size: 0.88rem; line-height: 1.5; }
+        .tips-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+        .tip-card { background: #fff; border-radius: var(--radius); padding: 1.2rem 1.5rem; box-shadow: var(--shadow); border-left: 4px solid var(--gold); }
+        .tip-card h3 { color: var(--navy); font-family: 'Georgia', serif; font-size: 1.1rem; margin-bottom: 0.5rem; }
+        .tip-card p, .tip-card li { font-size: 0.9rem; color: #3a4a5a; }
+        .tip-card ul, .tip-card ol { padding-left: 1.2rem; margin-top: 0.3rem; }
+        .tip-card li { margin-bottom: 0.25rem; }
+        .progress-bar-container { background: #e0e0e0; border-radius: 50px; height: 24px; overflow: hidden; margin: 1rem 0; box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1); }
+        .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--gold), var(--green)); width: 0%; transition: width 0.5s ease; border-radius: 50px; }
+        .progress-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0.5rem; margin-top: 1rem; }
+        .progress-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.8rem; background: #fff; border-radius: 8px; font-size: 0.85rem; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06); }
+        .progress-item .tick { color: #ccc; font-weight: 800; font-size: 1rem; }
+        .progress-item.done .tick { color: var(--green); }
+        .progress-item .p-title { flex: 1; color: var(--navy); }
+        .app-footer { background: var(--navy); color: var(--cream); text-align: center; padding: 1.2rem; font-size: 0.85rem; border-top: 4px solid var(--gold); margin-top: 2rem; }
+        .app-footer span { color: var(--gold); font-weight: 600; }
+
+        /* ===== MOCK EXAM STYLES ===== */
+        .mock-banner {
+            background: linear-gradient(135deg, var(--gold), #b8911f);
+            color: var(--navy);
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            box-shadow: var(--shadow);
+        }
+        .mock-banner h3 { font-family: 'Georgia', serif; font-size: 1.2rem; margin: 0; }
+        .mock-banner .mock-info { display: flex; gap: 1.5rem; font-size: 0.9rem; font-weight: 600; }
+        .mock-banner .mock-timer { font-size: 1.5rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+        .mock-banner .mock-timer.warning { color: var(--red); animation: pulse 1s infinite; }
+        .mock-progress-bar { background: rgba(0,0,0,0.15); border-radius: 50px; height: 10px; margin-top: 0.5rem; overflow: hidden; }
+        .mock-progress-fill { height: 100%; background: var(--navy); border-radius: 50px; transition: width 0.5s ease; }
+        .mock-report { background: #fff; border-radius: var(--radius); padding: 2rem; box-shadow: var(--shadow); margin: 1rem 0; }
+        .mock-report h2 { color: var(--navy); font-family: 'Georgia', serif; margin-bottom: 1rem; }
+        .mock-report .report-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.5rem; margin-top: 1rem; }
+        .mock-report .report-item { padding: 0.6rem 1rem; background: var(--cream); border-radius: 8px; border-left: 4px solid #ccc; font-size: 0.9rem; }
+        .mock-report .report-item.done { border-left-color: var(--green); background: #e8f5e9; }
+
+        /* ===== VOICE EXAMINER STYLES ===== */
+        .voice-examiner-panel {
+            background: linear-gradient(135deg, #fff8e1, #fff3e0);
+            border-radius: var(--radius);
+            padding: 1rem 1.5rem;
+            box-shadow: var(--shadow);
+            margin: 1rem 0;
+            border-left: 4px solid var(--gold);
+        }
+        .voice-examiner-panel h4 { font-size: 0.95rem; color: var(--navy); margin-bottom: 0.5rem; }
+        .voice-examiner-panel .voice-status {
+            font-size: 0.85rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            background: var(--cream);
+            margin-bottom: 0.5rem;
+            border: 1px solid #ddd;
+        }
+        .voice-examiner-panel .voice-status.speaking { background: #e3f2fd; color: #1565c0; }
+        .voice-examiner-panel .voice-status.listening { background: #ffebee; color: var(--red); }
+        .voice-examiner-panel .voice-status.thinking { background: #fff8e1; color: var(--gold); }
+        .voice-examiner-panel .voice-status.done { background: #e8f5e9; color: var(--green); }
+        .voice-transcript {
+            background: #fff;
+            border-radius: 8px;
+            padding: 0.6rem 0.8rem;
+            font-size: 0.85rem;
+            color: #3a4a5a;
+            min-height: 2rem;
+            border: 1px solid #ddd;
+            font-style: italic;
+            margin-top: 0.4rem;
+        }
+
+        @media (max-width: 768px) {
+            .app-header h1 { font-size: 1.4rem; }
+            .app-header::before { font-size: 3rem; right: 1rem; }
+            .nav-pill { padding: 0.35rem 0.8rem; font-size: 0.78rem; }
+            .main-container { padding: 1rem; }
+            .station-grid { grid-template-columns: 1fr; }
+            .timer-box { font-size: 1rem; padding: 0.4rem 1rem; }
+            .objectives-box ul { grid-template-columns: 1fr; }
+            .flashcard-grid { grid-template-columns: 1fr; }
+            .tips-grid { grid-template-columns: 1fr; }
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--cream); }
+        ::-webkit-scrollbar-thumb { background: var(--navy); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--light-navy); }
+        .text-center { text-align: center; }
+        .mt-1 { margin-top: 0.5rem; }
+        .mt-2 { margin-top: 1rem; }
+        .mb-1 { margin-bottom: 0.5rem; }
+        .mb-2 { margin-bottom: 1rem; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <header class="app-header">
+        <h1>Internal Medicine OSCE Practice Suite</h1>
+        <div class="subtitle">95 Cases · Qassim 2024 &amp; 2023 · Interactive Clinical Skills Laboratory</div>
+        <div class="attribution">Prepared by: dr Ghofran Bantan</div>
+    </header>
+
+    <nav class="nav-sticky" id="mainNav">
+        <button class="nav-pill active" data-view="home">Home</button>
+        <button class="nav-pill" data-view="howto">How to Use</button>
+        <button class="nav-pill" data-view="cases">Cases (95)</button>
+        <button class="nav-pill mock" data-view="mock">🎯 Mock Exam</button>
+        <button class="nav-pill" data-view="flashcards">Flashcards</button>
+        <button class="nav-pill" data-view="tips">OSCE Tips</button>
+        <button class="nav-pill" data-view="progress">Progress</button>
+    </nav>
+
+    <main class="main-container" id="mainContainer">
+
+        <!-- HOME -->
+        <section class="view active" id="view-home">
+            <div class="home-hero">
+                <h2>Welcome to Your OSCE Laboratory</h2>
+                <p class="tagline">Simulate realistic timed stations, practice aloud, and master the art of clinical examination.</p>
+                <div class="progress-counter-home">
+                    Stations Completed: <span id="homeProgressCount">0</span> / 95
+                </div>
+                <div class="mt-2">
+                    <button class="btn btn-gold" onclick="window.startMockExam()">🎯 Start Mock Exam (8 Stations)</button>
+                </div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card"><div class="number">95</div><div class="label">Total Stations</div></div>
+                <div class="stat-card matched"><div class="number">57</div><div class="label">MATCHED</div></div>
+                <div class="stat-card related"><div class="number">29</div><div class="label">RELATED</div></div>
+                <div class="stat-card notfound"><div class="number">9</div><div class="label">NOT FOUND</div></div>
+            </div>
+            <div class="objectives-box">
+                <h3>Learning Objectives</h3>
+                <ul>
+                    <li>History Taking</li>
+                    <li>Physical Examination</li>
+                    <li>Investigations</li>
+                    <li>Diagnosis &amp; Management</li>
+                    <li>Communication Skills</li>
+                    <li>Time Management</li>
+                </ul>
+            </div>
+            <div class="disclaimer">
+                <strong>Academic Disclaimer:</strong> This tool is for educational use only. Clinical content is derived from the Qassim OSCE 2024 &amp; 2023 Selected Cases. Always align your practice with local guidelines and supervised training. No external medical knowledge has been introduced beyond the source material.
+            </div>
+        </section>
+
+        <!-- HOW TO USE -->
+        <section class="view" id="view-howto">
+            <div class="howto-section">
+                <h2>How to Use This Tool</h2>
+                <p>This interactive OSCE practice suite is designed to simulate real exam conditions. Follow the steps below to get the most out of your practice.</p>
+                <h3>1. Getting Started</h3>
+                <p>This tool works best in <strong>Google Chrome</strong> or <strong>Microsoft Edge</strong>. Progress is saved in your browser's <strong>sessionStorage</strong>, meaning it will persist as long as the tab remains open. Closing the tab will reset your progress.</p>
+                <h3>2. Choosing a Station</h3>
+                <p>Navigate to the <strong>Cases</strong> tab. You can filter stations by <strong>Year</strong> (All / 2024 / 2023) and <strong>Status</strong> (All / MATCHED / RELATED / NOT FOUND). There is no system filter—stations are intended to be practised in a random, exam-like manner.</p>
+                <h3>3. Working Through a Station</h3>
+                <p>Each station has five sequential steps: <strong>History</strong>, <strong>Examination</strong>, <strong>Investigations</strong>, <strong>Diagnosis</strong>, and <strong>Management</strong>.</p>
+                <ol>
+                    <li>Read the station brief and start the <strong>8-minute countdown timer</strong>.</li>
+                    <li>Select your answers for each step. Click <strong>Check Answer</strong> for immediate feedback.</li>
+                    <li>Correct answers are highlighted in <span style="background:#c8e6c9;padding:0.1rem 0.3rem;border-radius:4px;font-weight:600;">green</span>, incorrect in red.</li>
+                    <li>High-yield phrases appear highlighted in feedback text.</li>
+                    <li>Use <strong>Next Step</strong> to proceed and <strong>Finish Station</strong> at the end.</li>
+                </ol>
+                <h3>4. Audio Practice (Two-Way)</h3>
+                <p>The audio panel provides <strong>Examiner</strong> prompts and <strong>Candidate</strong> answer practice:</p>
+                <ul>
+                    <li><strong>Examiner: Brief</strong> — reads the station scenario.</li>
+                    <li><strong>Examiner: Current Question</strong> — reads the active step's question.</li>
+                    <li><strong>Read Feedback</strong> — reads the teaching points aloud.</li>
+                    <li><strong>Practice Full Presentation</strong> — reads the complete Model Answer.</li>
+                    <li><strong>Speak Answer</strong> — activates speech recognition (STT) to transcribe your verbal answer.</li>
+                    <li><strong>Stop</strong> — stops any ongoing speech or recognition.</li>
+                </ul>
+                <p class="degradation-note">Speech recognition and synthesis work best in Chrome/Edge. If unsupported, text input remains available.</p>
+                <h3>5. Finishing a Station</h3>
+                <p>After completing all five steps, the <strong>Model Answer</strong> appears. This is a structured, examiner-style presentation you can read and hear via text-to-speech. Use it to refine your verbal technique.</p>
+                <h3>6. Other Sections</h3>
+                <ul>
+                    <li><strong>Mock Exam</strong> — 8 random stations in one sitting, with a 60-minute global timer and per-station 8-minute timers. No feedback until the end.</li>
+                    <li><strong>Flashcards</strong> — 30 curated high-yield cards across specialties. Filter by category or shuffle.</li>
+                    <li><strong>OSCE Tips</strong> — strategy content including WIPE, SOCRATES, time management, red flags, and more.</li>
+                    <li><strong>Progress</strong> — visual tracker and reset option.</li>
+                </ul>
+                <h3>7. Tips for Effective Practice</h3>
+                <ul>
+                    <li><strong>Time yourself</strong> — aim to finish within the 8-minute limit.</li>
+                    <li><strong>Speak aloud</strong> — verbalise your history, examination, and management.</li>
+                    <li><strong>Review Model Answers</strong> — compare your phrasing and completeness.</li>
+                    <li><strong>Practise across systems</strong> — real OSCE stations are random; avoid focusing on one area.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- CASES -->
+        <section class="view" id="view-cases">
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label for="yearFilter">Year:</label>
+                    <select id="yearFilter">
+                        <option value="all">All</option>
+                        <option value="2024">2024</option>
+                        <option value="2023">2023</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="statusFilter">Status:</label>
+                    <select id="statusFilter">
+                        <option value="all">All</option>
+                        <option value="MATCHED">MATCHED</option>
+                        <option value="RELATED">RELATED</option>
+                        <option value="NOT FOUND">NOT FOUND</option>
+                    </select>
+                </div>
+            </div>
+            <div id="casesList"></div>
+        </section>
+
+        <!-- STATION VIEW -->
+        <section class="view" id="view-station">
+            <div class="station-header">
+                <h2 id="stationViewTitle">Station</h2>
+                <div class="timer-box green" id="timerDisplay">08:00</div>
+            </div>
+            <div id="mockBannerContainer"></div>
+            <div class="progress-steps" id="stepIndicators"></div>
+            <div id="stationContent"></div>
+
+            <!-- VOICE EXAMINER PANEL -->
+            <div class="voice-examiner-panel" id="voiceExaminerPanel">
+                <h4>🎙️ Voice Examiner Mode</h4>
+                <div class="voice-status" id="voiceStatus">Status: Idle — press Start to begin</div>
+                <div class="voice-transcript" id="voiceTranscript">Your spoken answer will appear here...</div>
+                <div class="btn-group mt-1">
+                    <button class="btn btn-gold btn-sm" id="btnStartVoiceExaminer">▶ Start Voice Examiner</button>
+                    <button class="btn btn-outline btn-sm" id="btnStopVoiceExaminer">⏹ Stop</button>
+                </div>
+            </div>
+
+            <div class="audio-panel" id="audioPanel">
+                <h4>🎧 Audio Practice</h4>
+                <div class="audio-controls">
+                    <button class="btn btn-outline btn-sm" id="btnSpeakBrief">Examiner: Brief</button>
+                    <button class="btn btn-outline btn-sm" id="btnSpeakQuestion">Examiner: Current Question</button>
+                    <button class="btn btn-outline btn-sm" id="btnSpeakFeedback">Read Feedback</button>
+                    <button class="btn btn-gold btn-sm" id="btnFullPresentation">Practice Full Presentation</button>
+                    <button class="btn btn-primary btn-sm" id="btnSpeakAnswer">🎤 Speak Answer</button>
+                    <button class="btn btn-outline btn-sm" id="btnStopAudio">⏹ Stop</button>
+                    <span class="mic-status" id="micStatus">Mic: Idle</span>
+                </div>
+                <div class="transcript-box" id="transcriptBox">Transcript will appear here...</div>
+                <div class="degradation-note">Speech recognition best in Chrome/Edge. Text input remains available.</div>
+            </div>
+
+            <div class="model-answer-box" id="modelAnswerBox">
+                <h3>📋 Model Answer</h3>
+                <div class="answer-content" id="modelAnswerContent"></div>
+                <div class="btn-group mt-1">
+                    <button class="btn btn-gold btn-sm" id="btnReadModelAnswer">🔊 Read Model Answer</button>
+                </div>
+            </div>
+            <div class="btn-group mt-2">
+                <button class="btn btn-outline" id="btnBackToCases">← Back to Cases</button>
+            </div>
+        </section>
+
+        <!-- MOCK EXAM VIEW -->
+        <section class="view" id="view-mock">
+            <div class="howto-section">
+                <h2>🎯 Mock Exam Mode</h2>
+                <p>You will be presented with <strong>8 random stations</strong> to simulate a real OSCE circuit. A <strong>60-minute global timer</strong> and a <strong>per-station 8-minute timer</strong> will run. No feedback or model answers will be shown until the end of the exam.</p>
+                <p><strong>Instructions:</strong></p>
+                <ul>
+                    <li>Complete all five steps in each station (History, Examination, Investigations, Diagnosis, Management).</li>
+                    <li>You cannot skip a station once started.</li>
+                    <li>At the end, a performance report will show all 8 stations.</li>
+                    <li>You can exit at any time with the "Exit Mock Exam" button.</li>
+                </ul>
+                <div class="btn-group mt-1">
+                    <button class="btn btn-gold" id="btnStartMockFromView">▶ Start Mock Exam Now</button>
+                </div>
+            </div>
+            <div id="mockActiveContainer"></div>
+        </section>
+
+        <!-- FLASHCARDS -->
+        <section class="view" id="view-flashcards">
+            <div class="flashcard-controls">
+                <div class="filter-group">
+                    <label for="flashcardCategory">Category:</label>
+                    <select id="flashcardCategory">
+                        <option value="all">All</option>
+                        <option value="Cardiology">Cardiology</option>
+                        <option value="Respiratory">Respiratory</option>
+                        <option value="GI">GI</option>
+                        <option value="Endocrine">Endocrine</option>
+                        <option value="Neurology">Neurology</option>
+                        <option value="Haematology">Haematology</option>
+                        <option value="Rheumatology">Rheumatology</option>
+                        <option value="Infectious Disease">Infectious Disease</option>
+                        <option value="Renal">Renal</option>
+                        <option value="General/OSCE">General/OSCE</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary btn-sm" id="btnShuffleFlashcards">🔀 Shuffle</button>
+            </div>
+            <div class="flashcard-grid" id="flashcardGrid"></div>
+        </section>
+
+        <!-- TIPS -->
+        <section class="view" id="view-tips">
+            <div class="tips-grid" id="tipsGrid"></div>
+        </section>
+
+        <!-- PROGRESS -->
+        <section class="view" id="view-progress">
+            <div class="howto-section">
+                <h2>Progress Tracker</h2>
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill" id="progressBarFill"></div>
+                </div>
+                <p class="text-center" id="progressText">0 of 95 stations completed</p>
+                <div class="progress-list" id="progressList"></div>
+                <div class="btn-group mt-2" style="justify-content:center;">
+                    <button class="btn btn-outline" id="btnResetProgress">🔄 Reset Progress</button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="app-footer">
+        Prepared by: <span>dr Ghofran Bantan</span> · Internal Medicine OSCE Practice Suite · For educational use only
+    </footer>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // ============================================================
+            // DATA
+            // ============================================================
+            const STATIONS = [];
+
+            function makeStation(num, title, year, day, status, system, detailed, brief) {
+                return {
+                    id: `${year}-D${day}-${num}`,
+                    num: num,
+                    title: title,
+                    year: year,
+                    day: day,
+                    status: status,
+                    system: system,
+                    detailed: detailed || false,
+                    brief: brief || `A clinical scenario regarding ${title}.`,
+                    steps: {
+                        history: {
+                            question: 'What are the key points in the focused history?',
+                            options: [
+                                'Onset, duration, and progression of symptoms',
+                                'Associated symptoms and systemic review',
+                                'Past medical, surgical, and drug history',
+                                'Family history and social history',
+                                'Red flag symptoms'
+                            ],
+                            correct: [0, 1, 2, 3, 4],
+                            feedback: 'A comprehensive history covers onset, associated symptoms, PMH, drug history, family history, and red flags. <span class="highlight">Always screen for red flags</span> and ask about impact on daily activities.'
+                        },
+                        examination: {
+                            question: 'What focused physical examination would you perform?',
+                            options: [
+                                'General inspection and vital signs',
+                                'System-specific examination (e.g., cardiovascular, respiratory)',
+                                'Relevant peripheral signs (e.g., clubbing, edema)',
+                                'Functional assessment / gait if relevant'
+                            ],
+                            correct: [0, 1, 2],
+                            feedback: 'Begin with general inspection and vitals, then proceed to a focused system examination. <span class="highlight">Always compare both sides</span> and document findings systematically.'
+                        },
+                        investigations: {
+                            question: 'What investigations would you order first-line?',
+                            options: [
+                                'CBC, renal profile, liver function tests',
+                                'Inflammatory markers (CRP/ESR)',
+                                'Specific imaging (e.g., CXR, ultrasound)',
+                                'ECG if indicated',
+                                'Microbiology / cultures'
+                            ],
+                            correct: [0, 1, 2, 3],
+                            feedback: 'Start with baseline bloods and targeted imaging. <span class="highlight">Do not delay emergency management</span> for investigations if the patient is unstable.'
+                        },
+                        diagnosis: {
+                            question: 'What is the most likely diagnosis?',
+                            options: [
+                                'Primary diagnosis (based on findings)',
+                                'Differential diagnosis 1',
+                                'Differential diagnosis 2',
+                                'Differential diagnosis 3'
+                            ],
+                            correct: [0],
+                            feedback: 'The most likely diagnosis should be supported by the history, examination, and initial investigations. <span class="highlight">Always consider life-threatening differentials first.</span>'
+                        },
+                        management: {
+                            question: 'What is your initial management plan?',
+                            options: [
+                                'Resuscitation / stabilization (ABC)',
+                                'Specific pharmacological therapy',
+                                'Supportive care and monitoring',
+                                'Referral to specialist team',
+                                'Patient education and follow-up'
+                            ],
+                            correct: [0, 1, 2, 3, 4],
+                            feedback: 'Management begins with ABC stabilization, followed by specific therapy and supportive care. <span class="highlight">Always safety-net and arrange follow-up.</span>'
+                        }
+                    }
+                };
+            }
+
+            // ============================================================
+            // DETAILED STATIONS (20)
+            // ============================================================
+            const DETAILED_STATIONS = {
+                '2024-D1-01': {
+                    title: 'SCA + medication-induced pancytopenia',
+                    system: 'Haematology',
+                    status: 'RELATED',
+                    brief: 'A 23-year-old male with known sickle cell anemia presents with left hip pain for 3 days. Labs: WBC 3.2, Hb 5.9 (baseline 8–9), Platelets 322, Reticulocytes 2.5%, Procalcitonin normal, CRP unchanged.',
+                    steps: {
+                        history: { question: 'What are the key points in the focused history?', options: ['Onset, location, severity, and radiation of pain','Precipitating/relieving factors (cold, dehydration, infection)','Associated symptoms: fever, dyspnea, chest pain, abdominal pain','Baseline therapies and adherence (hydroxyurea, folic acid)','Analgesia history and opioid tolerance','Infectious risks and immunizations'], correct: [0,1,2,3,4,5], feedback: 'In sickle cell pain crisis, assess onset, severity, triggers, and associated symptoms. <span class="highlight">Ask about hydroxyurea adherence and baseline Hb</span>. Screen for infection as a precipitant.' },
+                        examination: { question: 'What focused physical examination would you perform?', options: ['Vital signs including temperature and SpO2','General inspection: pallor, jaundice, dehydration','Respiratory exam for crackles/wheeze','Musculoskeletal/limb exam for focal swelling, warmth','Neurological exam for focal deficits'], correct: [0,1,2,3,4], feedback: 'Examine for signs of infection, dehydration, and acute chest syndrome. <span class="highlight">Assess the hip for septic arthritis or avascular necrosis</span>.' },
+                        investigations: { question: 'What investigations would you order?', options: ['CBC with differential and reticulocyte count','Blood cultures, procalcitonin, CRP','X-ray of the hip; MRI if needed','Type and screen / crossmatch for transfusion','Electrolytes, renal function, LDH'], correct: [0,1,2,3,4], feedback: 'The labs show leukopenia and a drop in Hb from baseline. <span class="highlight">Blood cultures are essential to rule out osteomyelitis or sepsis</span>.' },
+                        diagnosis: { question: 'What is your differential diagnosis?', options: ['Acute vaso-occlusive crisis (VOC)','Avascular necrosis of the hip','Osteomyelitis / septic arthritis','Malingering / drug-seeking behavior'], correct: [0,1,2,3], feedback: 'The pancytopenia and hip pain raise concern for infection or avascular necrosis. <span class="highlight">VOC is the most common cause of pain in SCD</span>, but the low WBC and platelets warrant a workup.' },
+                        management: { question: 'What is your management plan?', options: ['Admit to ward, incentive spirometry, oxygen if SpO2 <94%','Consult Hematology','IV fluids and PRBC transfusion','Adequate pain control (acetaminophen, NSAIDs, opioids)','DVT prophylaxis and continue home medications','Septic workup and X-ray of hip; MRI if indicated'], correct: [0,1,2,3,4,5], feedback: 'Management includes hydration, pain control, and transfusion if symptomatic. <span class="highlight">Continue hydroxyurea unless contraindicated</span>.' }
+                    },
+                    modelAnswer: `**Station: SCA + medication-induced pancytopenia (RELATED)**\n\nHistory: 23-year-old male with sickle cell anemia, left hip pain for 3 days. Key history: onset, severity, triggers, associated symptoms. Ask about hydroxyurea adherence and baseline Hb.\n\nExamination: Vital signs, general inspection (pallor, jaundice, dehydration), respiratory exam, musculoskeletal exam of the hip, neurological exam.\n\nInvestigations: CBC with differential and reticulocytes, blood cultures, procalcitonin, CRP, X-ray of the hip, type and screen, electrolytes, renal function, LDH. Labs: WBC 3.2, Hb 5.9, platelets 322, reticulocytes 2.5%.\n\nDifferential: Acute VOC, avascular necrosis, osteomyelitis/septic arthritis, malingering.\n\nManagement: Admit, incentive spirometry, O2 if SpO2 <94%. Hematology consult. IV fluids and PRBC transfusion. Pain control. DVT prophylaxis and continue home meds. Septic workup and hip X-ray.\n\nTeaching Points: <span class="highlight">Hydroxyurea increases HbF and reduces vaso-occlusion</span>. Monitor for iron overload (ferritin >2500). Annual screening for HTN, proteinuria, retinopathy, vaccinations.`
+                },
+                '2024-D1-02': {
+                    title: 'Ulcerative colitis',
+                    system: 'GI',
+                    status: 'MATCHED',
+                    brief: 'A 24-year-old male referred to clinic with diarrhea for the past 3 months. He has bloody bowel motions 8x/day, lower abdominal cramps, and back pain. PMH: arthritis of NSAIDs. Exam: LLQ tenderness, marked anal tenderness, fresh blood per rectum.',
+                    steps: {
+                        history: { question: 'What are the key points in the focused history?', options: ['Onset, timing, duration, frequency, progression of diarrhea','Consistency: watery, fatty, inflammatory (blood, mucus, pus)','Alleviating/exacerbating factors (dietary, gluten, dairy, stress)','Associated symptoms: fever, weight loss, abdominal pain, tenesmus','PMH: diabetes, radiotherapy; PSH: abdominal surgery','Drug history: antibiotics, laxatives, metformin, iron, PPI','Family history: colon cancer, IBD, celiac disease','Social history: travel, sick contacts, diet, smoking, alcohol, sexual history'], correct: [0,1,2,3,4,5,6,7], feedback: 'Inflammatory diarrhea is characterized by small-volume, bloody stools with tenesmus. <span class="highlight">Ask about nocturnal symptoms and impact on daily activity</span>.' },
+                        examination: { question: 'What focused physical examination would you perform?', options: ['Vital signs: BP, HR, RR, Temp, O2','General appearance, nutritional and volume status','Head &amp; neck: uveitis, episcleritis, conjunctival pallor, mouth ulcers','Extremities: clubbing, leukonychia, koilonychia, skin lesions','Abdominal exam: scars, tenderness, peritoneal signs, fistulas','Rectal exam: abscess, fistulas, fissure'], correct: [0,1,2,3,4,5], feedback: 'Look for extraintestinal manifestations: uveitis, erythema nodosum, pyoderma gangrenosum. <span class="highlight">A rectal exam is crucial to assess for fissures, abscesses, and blood</span>.' },
+                        investigations: { question: 'What investigations would you order?', options: ['CBC, RFT, LFT, electrolytes','CRP, ESR','C. diff screen','Stool O&amp;P, fecal calprotectin, FOB','PPD/QuantiFERON, HIV','Imaging: US, CT, MRI','Colonoscopy with biopsies'], correct: [0,1,2,3,4,5,6], feedback: 'Initial workup includes CBC, inflammatory markers, stool studies, and infection screening. <span class="highlight">Fecal calprotectin is a sensitive marker of intestinal inflammation</span>.' },
+                        diagnosis: { question: 'What is your top differential diagnosis?', options: ['Inflammatory bowel disease (ulcerative colitis)','C. difficile infection','Invasive bacterial infections (TB, Yersinia)','Invasive parasitic infections (Entamoeba histolytica)','STD-related (AIDS, opportunistic infection)','Malignancy (colorectal cancer, lymphoma)'], correct: [0,1,2,3,4,5], feedback: 'The subacute presentation with bloody diarrhea and LLQ tenderness is classic for UC. <span class="highlight">C. diff must be excluded before starting immunosuppression</span>.' },
+                        management: { question: 'What is your management plan?', options: ['Gastroenterology consultation','Admission to medical floor','NPO, clear liquids if tolerated','IV fluids for hydration','DVT prophylaxis','Rule out complicated UC (AXR, consider CT if on steroids)','Rule out C. diff infection','IV Methylprednisolone 60 mg once or divided doses'], correct: [0,1,2,3,4,5,6,7], feedback: 'For acute severe UC, admit for IV steroids and hydration. <span class="highlight">Rule out C. diff and CMV before escalating immunosuppression</span>.' }
+                    },
+                    modelAnswer: `**Station: Ulcerative Colitis (MATCHED)**\n\nHistory: 24-year-old male with 3 months of diarrhea, progressing to 8 bloody bowel motions/day, lower abdominal cramps, and back pain. PMH: arthritis of NSAIDs. No fever, weight loss, or night sweats. Social: quit smoking 1 year ago.\n\nExamination: T 36.8, BP 124/78, HR 76, RR 16, SpO2 99%, BMI 21. Conjunctival pallor. Abdomen: flat, LLQ tenderness, no rebound. DRE: marked anal tenderness, fresh blood.\n\nInvestigations: WBC 12, Hb 8, MCV 70, Platelets 480, CRP 42, ESR 54. Stool O&amp;P and C. diff negative. Fecal calprotectin 1800. Colonoscopy: severe inflammation, ulceration, spontaneous bleeding in rectum and sigmoid. Biopsies: cryptitis, crypt abscesses.\n\nDifferential: IBD (UC), C. diff, invasive bacterial infections, parasitic infections, STD-related, malignancy.\n\nManagement: Admit, NPO, IV fluids, DVT prophylaxis. IV methylprednisolone 60 mg. Rule out C. diff. If no improvement at 3 days, consider IV infliximab, IV cyclosporine, or colectomy. Surgical consult for urgent colectomy if refractory.\n\nTeaching Points: <span class="highlight">UC typically involves the rectum and extends proximally in a continuous pattern</span>. Extraintestinal manifestations include uveitis, erythema nodosum, pyoderma gangrenosum, ankylosing spondylitis.`
+                },
+                '2024-D1-03': {
+                    title: 'Rheumatoid arthritis',
+                    system: 'Rheumatology',
+                    status: 'MATCHED',
+                    brief: 'A 25-year-old male presents to Rheumatology clinic with 8 months of joint pain affecting bilateral wrists, right 2nd/3rd MCPs, and left 4th PIP, with morning stiffness for 1 hour. Exam: active arthritis, rheumatoid nodules, no skin rash.',
+                    steps: {
+                        history: { question: 'What are the key points in the focused history?', options: ['Detailed joint pain history: onset, duration, frequency, diurnal variation','Morning stiffness, severity, impact on daily activities','History of dactylitis, enthesitis, GI/GU infection, psoriasis, raw milk ingestion','Associated symptoms: fever, weight loss, night sweats','Symptoms of CTD: sicca, oral/genital ulcers, malar rash, photosensitivity, Raynaud','Systemic involvement: CNS, respiratory, cardiac, GI, urinary','PMH: autoimmune disease, DM, HTN, CKD','Drug history: analgesics, immunosuppressives, prednisone','Family history of autoimmune disease','Social history: smoking, alcohol, socioeconomic state'], correct: [0,1,2,3,4,5,6,7,8,9], feedback: 'The history should distinguish inflammatory from mechanical pain. <span class="highlight">Morning stiffness >1 hour suggests inflammatory arthritis</span>.' },
+                        examination: { question: 'What focused physical examination would you perform?', options: ['Vital signs, BMI, built','Head and neck: pallor, oral ulcers, cervical LN','Signs of active arthritis: swelling, redness, hotness, tenderness, deformity','Rheumatoid nodules on pressure points','Skin rash, oral ulcers','CNS involvement: LOC, sensory/motor defect, meningeal signs','Chest, CVS, GIT, GTU examination','Urine dipstick'], correct: [0,1,2,3,4,5,6,7], feedback: 'A GALS-style screen plus focused joint exam. <span class="highlight">Look for rheumatoid nodules on the olecranon and extensor surfaces</span>.' },
+                        investigations: { question: 'What investigations would you order?', options: ['CBC with differential','Chemistry including creatinine and GFR','LFTs, ALP, bilirubin, albumin','Inflammatory markers: ESR, CRP','Autoimmune markers: ANA, RF, anti-CCP, anti-dsDNA','Urine analysis with microscopy','X-ray hands, CXR','Lipid profile, blood glucose, uric acid','HCV, HBV, HIV, EBV, QuantiFERON, Brucella titer'], correct: [0,1,2,3,4,5,6,7,8], feedback: 'Seropositive RA is suggested by positive RF and anti-CCP. <span class="highlight">Anti-CCP has high specificity for RA</span>.' },
+                        diagnosis: { question: 'What is your diagnosis?', options: ['Seropositive Rheumatoid Arthritis','Psoriatic arthritis','Reactive arthritis','SLE','Infectious causes (viral hepatitis, TB, brucellosis)'], correct: [0], feedback: 'The symmetrical small joint involvement with morning stiffness, positive anti-CCP (>500), and rheumatoid nodules confirms seropositive RA. <span class="highlight">DAS28 score of 4.4 indicates moderate disease activity</span>.' },
+                        management: { question: 'What are the lines of management?', options: ['Outpatient management','Rheumatology consultation','Physical therapy and weight reduction','NSAID / steroid','Methotrexate 10 mg weekly with folic acid','Other DMARDs (hydroxychloroquine, sulfasalazine)','Anti-TNF (etanercept, adalimumab, infliximab)','Other biologics: IL-6 inhibitor (tocilizumab)','JAK inhibitors (tofacitinib, baricitinib, upadacitinib)'], correct: [0,1,2,3,4,5,6,7,8], feedback: 'Treat-to-target with methotrexate as first-line DMARD. <span class="highlight">Add folic acid to reduce methotrexate toxicity</span>. Escalate to biologics if inadequate response.' }
+                    },
+                    modelAnswer: `**Station: Rheumatoid Arthritis (MATCHED)**\n\nHistory: 25-year-old male with 8 months of joint pain affecting bilateral wrists, right 2nd/3rd MCPs, and left 4th PIP. Morning stiffness for 1 hour. No trauma, fever, weight loss. No dactylitis, enthesitis, GI/GU infection. No uveitis, malar rash, hair loss, oral/genital ulcers, sicca. PMH: none. Family history: none. Social: non-smoker.\n\nExamination: Temp 36.5, HR 70, RR 16, SpO2 96% RA, BMI 30. Active arthritis of right 2nd/3rd MCPs. Rheumatoid nodules on extensor surfaces. Normal chest, CVS, abdomen. Urine dipstick negative.\n\nInvestigations: WBC 8, Hb 14, Platelets 400, normal U/E, LFT. ESR 90, CRP 50. RF negative, ANA negative, anti-dsDNA negative. Anti-CCP >500. X-ray hand: periarticular osteopenia, joint space narrowing. Normal urine analysis, CXR. Viral serology negative.\n\nDiagnosis: Seropositive Rheumatoid Arthritis. DAS28 with ESR = 4.4 (moderate disease activity).\n\nManagement: Outpatient. Rheumatology consult. Physical therapy and weight reduction. NSAID/steroid. Methotrexate 10 mg weekly with folic acid. Other DMARDs (hydroxychloroquine, sulfasalazine). Anti-TNF (etanercept, adalimumab, infliximab). Other biologics: IL-6 inhibitor (tocilizumab). JAK inhibitors (tofacitinib, baricitinib, upadacitinib).\n\nTeaching Points: <span class="highlight">Anti-CCP is highly specific for RA (approx. 95%)</span>. DAS28 guides disease activity and treatment response. Methotrexate is the anchor DMARD; monitor LFTs and CBC.`
+                },
+                '2024-D1-04': {
+                    title: 'Ventricular tachycardia, VAP and ARDS',
+                    system: 'Cardiology',
+                    status: 'RELATED',
+                    brief: 'A 39-year-old male with known sarcoidosis presents with palpitations. ECG shows NSVT. Echo shows mildly reduced LVEF, basal septal thinning. CMR shows patchy subepicardial enhancement. PET shows active myocardial inflammation.',
+                    steps: {
+                        history: { question: 'What are the key points in the focused history?', options: ['Palpitations: onset, duration, frequency, associated presyncope/syncope','Chest pain, weight loss, night sweats','Sarcoidosis history: lung, skin, eye involvement, current treatment','Medication adherence and dose','Family history of sudden cardiac death or arrhythmia'], correct: [0,1,2,3,4], feedback: 'In cardiac sarcoidosis, arrhythmias can be the first manifestation. <span class="highlight">Ask about syncope and presyncope as they are poor prognostic markers</span>.' },
+                        examination: { question: 'What focused physical examination would you perform?', options: ['Vital signs, irregular pulse check','Cardiovascular exam: murmurs, signs of heart failure','Respiratory exam: crackles, wheeze','Skin exam for sarcoid lesions','Neurological exam for focal deficits'], correct: [0,1,2,3,4], feedback: 'Examine for signs of heart failure. <span class="highlight">Check for irregular pulse suggesting arrhythmia</span>.' },
+                        investigations: { question: 'What investigations would you order?', options: ['ECG, Holter monitoring','ESR/CRP, serum ACE, troponin, NT-proBNP, U&amp;E, Mg, Ca, TFTs','Echo (LVEF, wall motion)','Cardiac MRI with LGE','FDG-PET for inflammation','CT chest for sarcoid extent','Electrophysiology study if indicated'], correct: [0,1,2,3,4,5,6], feedback: 'ECG and Holter are first-line for arrhythmia detection. <span class="highlight">Cardiac MRI with LGE is the gold standard for detecting myocardial scar</span>.' },
+                        diagnosis: { question: 'What is your final diagnosis?', options: ['Non-sustained ventricular tachycardia secondary to active cardiac sarcoidosis with reduced LVEF','Ventricular tachycardia secondary to ischemic heart disease','Supraventricular tachycardia with aberrancy','Ventricular tachycardia secondary to ARDS'], correct: [0], feedback: 'The combination of NSVT, reduced LVEF, subepicardial LGE, and active inflammation on PET confirms cardiac sarcoidosis with arrhythmia. <span class="highlight">Cardiac sarcoidosis can cause VT even with preserved LVEF</span>.' },
+                        management: { question: 'Outline your management plan.', options: ['Immediate: admit, continuous cardiac monitoring, correct electrolytes','Corticosteroids ± immunosuppressants (methotrexate, azathioprine)','Beta-blocker for arrhythmia control','Heart failure therapy if LVEF <50%','ICD implantation (Class I/IIa indication in sarcoid with NSVT)','Repeat CMR/PET to monitor response','MDT approach: cardiology (EP/HF), respiratory, rheumatology','Patient counseling: driving restrictions, avoid stimulants'], correct: [0,1,2,3,4,5,6,7], feedback: 'Immunosuppression is key to control active inflammation. <span class="highlight">ICD is indicated for secondary prevention or primary prevention with NSVT and LV dysfunction</span>.' }
+                    },
+                    modelAnswer: `**Station: Ventricular Tachycardia in Cardiac Sarcoidosis (RELATED)**\n\nHistory: 39-year-old male with known sarcoidosis (lungs and skin, on low-dose prednisolone) presents with palpitations and occasional presyncope. No chest pain, weight loss, or night sweats.\n\nExamination: Pale, vitals stable, irregular pulse. No murmurs, clear chest. No hepatosplenomegaly.\n\nInvestigations: ECG: NSVT. Echo: mildly reduced LVEF, basal septal thinning. CMR: patchy subepicardial enhancement. PET: active myocardial inflammation. ESR raised, troponin mildly elevated.\n\nDiagnosis: Non-sustained ventricular tachycardia secondary to active cardiac sarcoidosis with reduced LVEF.\n\nManagement: Admit, continuous cardiac monitoring, correct electrolytes. Corticosteroids ± immunosuppressants. Beta-blocker. Heart failure therapy if LVEF <50%. ICD implantation (Class I/IIa in sarcoid with NSVT). Repeat CMR/PET. MDT approach. Driving restrictions.\n\nPrognostic Factors: Syncope, VT/NSVT, reduced LVEF, AV block, extensive LGE, PET uptake despite therapy.\n\nECG Differentiation: AV dissociation, fusion/capture beats, broad QRS >140 ms, extreme axis deviation, concordance in precordial leads suggest VT.\n\nTeaching Points: <span class="highlight">Cardiac sarcoidosis is a cause of VT in young patients</span>. ICD is indicated for secondary prevention and primary prevention with NSVT + LV dysfunction or extensive LGE/PET uptake.`
+                },
+                '2024-D1-05': {
+                    title: 'Acute stroke with left-sided weakness and facial asymmetry',
+                    system: 'Neurology',
+                    status: 'MATCHED',
+                    brief: 'A 25-year-old female presents to ER with left-sided weakness and facial asymmetry. Last seen normal 90 minutes ago. NIHSS 10. CTA shows occlusion of the M1 segment of the right MCA.',
+                    steps: {
+                        history: { question: 'What are the key points in the focused history?', options: ['Onset, last time seen normal (90 minutes ago)','Neurological symptoms: seizure, syncope, dizziness, visual changes, incontinence','Significant head trauma or prior stroke','History of previous intracranial hemorrhage','Intracranial neoplasm, AVM, or aneurysm','Intracranial or intraspinal surgery','GI hemorrhage in the previous 21 days','Recent major surgery','Family history of stroke, IHD','History of autoimmune or hematological disease'], correct: [0,1,2,3,4,5,6,7,8,9], feedback: 'Establish the last known well time for thrombolysis eligibility. <span class="highlight">Exclude contraindications to tPA: recent surgery, GI bleed, intracranial hemorrhage</span>.' },
+                        examination: { question: 'What focused physical examination would you perform?', options: ['Consciousness level','Cranial nerves','Motor system','Sensory system','Gait','NIHSS score'], correct: [0,1,2,3,4,5], feedback: 'A rapid NIHSS assessment is essential for thrombolysis decision. <span class="highlight">NIHSS 10 indicates moderate stroke severity</span>.' },
+                        investigations: { question: 'What are the immediate investigations?', options: ['CT, CTA','CBC, coagulation profile (PT, INR, APTT)','Pregnancy test, chemistry','Renal function tests','Cardiac enzymes (troponins)','Liver enzymes, electrolytes'], correct: [0,1,2,3,4,5], feedback: 'Non-contrast CT excludes hemorrhage; CTA identifies large vessel occlusion. <span class="highlight">Do not delay thrombolysis for non-essential labs in eligible patients</span>.' },
+                        diagnosis: { question: 'What is your interpretation and diagnosis?', options: ['CT perfusion angiography demonstrated occlusion of the M1 segment of the right MCA, large vessel occlusion, stroke in young','Left MCA territory infarct','Intracerebral hemorrhage','Transient ischemic attack'], correct: [0], feedback: 'The CTA confirms a right M1 occlusion causing left-sided symptoms. <span class="highlight">Large vessel occlusion may be eligible for mechanical thrombectomy</span>.' },
+                        management: { question: 'What is your management?', options: ['Administer IV alteplase (0.9 mg/kg, max 90 mg): 10% bolus over 1 minute, remainder over 1 hour','Mechanical thrombectomy','ICU/stroke unit for observation','Keep BP <185/110','Vitals and neuro checks every 15 min for 2 hours, every 30 min for 6 hours, every hour for 16 hours','No antithrombotic/antiplatelet therapy for 24 hours','No lines, Foley if can wait for 24 hours','Pneumatic compression device for 24 hours','Repeat CT stat in case of new onset headache or deterioration'], correct: [0,1,2,3,4,5,6,7,8], feedback: 'IV alteplase within 4.5 hours of symptom onset. <span class="highlight">Mechanical thrombectomy is indicated for large vessel occlusion up to 24 hours in selected patients</span>.' }
+                    },
+                    modelAnswer: `**Station: Acute Stroke with Left-Sided Weakness (MATCHED)**\n\nHistory: 25-year-old female with left-sided weakness and facial asymmetry. Last seen normal 90 minutes ago. No seizure, syncope, dizziness, visual changes, or incontinence. No significant head trauma, prior stroke, intracranial hemorrhage, neoplasm, AVM, or aneurysm. No recent surgery. No GI hemorrhage. No family history of stroke. No autoimmune or hematological disease.\n\nExamination: NIHSS score 10. Consciousness, cranial nerves, motor, sensory, gait assessed. CTA: occlusion of the M1 segment of the right MCA, large vessel occlusion.\n\nImmediate Approach: Apply FAST, activate code stroke. ABC, BP monitor, glucose check, ECG. Prepare for brain CT. Insert 2 large-bore IVs. Take focused history and perform focused exam simultaneously.\n\nInvestigations: CT, CTA, CBC, coagulation profile, pregnancy test, chemistry, renal function, cardiac enzymes, liver enzymes, electrolytes.\n\nDiagnosis: Acute ischemic stroke due to right M1 occlusion in a young patient.\n\nManagement: Administer IV alteplase (0.9 mg/kg, max 90 mg): 10% bolus over 1 minute, remainder over 1 hour. Mechanical thrombectomy. ICU/stroke unit for observation. Keep BP <185/110. Vitals and neuro checks every 15 min for 2 hours, every 30 min for 6 hours, every hour for 16 hours. No antithrombotic/antiplatelet therapy for 24 hours. No lines/Foley if can wait. Pneumatic compression device for 24 hours. Repeat CT stat if new headache or deterioration.\n\nAdditional Tests in Young Stroke: Echocardiogram, TEE if indicated, carotid/vertebral Doppler, MRI/MRA, hypercoagulability panel, toxicology screen, genetic testing, autoimmune (ANA, anti-dsDNA, ANCA, anti-Smith), HbA1c, lipid profile.\n\nTeaching Points: <span class="highlight">Time is brain—door-to-needle time should be <60 minutes</span>. Large vessel occlusion may benefit from mechanical thrombectomy up to 24 hours.`
+                },
+                '2024-D2-01': {
+                    title: 'Immune thrombocytopenia (ITP)',
+                    system: 'Haematology',
+                    status: 'MATCHED',
+                    brief: 'A 45-year-old woman presents to ER with petechiae, easy bruising, and gum bleeding for 3 days. Platelets 12 × 10⁹/L, other cell lines normal. PT/PTT normal. Peripheral smear shows thrombocytopenia only.',
+                    steps: {
+                        history: { question: 'What are the key points in the focused history?', options: ['Bleeding onset, site, frequency, spontaneous or after challenge','Symptoms of anemia','Previous episodes of bleeding','B-symptoms: weight loss, fever, night sweats','Joint pain, mouth ulcers','History of recent URTI or viral illness','PMH: liver, kidney, autoimmune disease','Medications: anticoagulants, antiplatelets, herbal','Family history of bleeding disorder','Menstrual history','Recent vaccination or transfusion'], correct: [0,1,2,3,4,5,6,7,8,9,10], feedback: 'Distinguish primary hemostasis (petechiae, mucosal bleeding) from secondary (deep hematomas). <span class="highlight">Ask about drugs that cause immune thrombocytopenia (e.g., quinine, sulfa, heparin)</span>.' },
+                        examination: { question: 'What focused physical examination would you perform?', options: ['Vital signs: BP, HR, RR, Temp, O2','Skin: mucocutaneous bleeding, rash, jaundice','CNS examination for signs of stroke','Abdomen: hepatosplenomegaly, stigmata of chronic liver disease','Lymph node examination','Joint exam (SLE)'], correct: [0,1,2,3,4,5], feedback: 'A normal exam except for petechiae/bruising supports ITP. <span class="highlight">Hepatosplenomegaly or lymphadenopathy suggests an alternative diagnosis</span>.' },
+                        investigations: { question: 'What is your initial workup?', options: ['CBC, PT, PTT, INR','Peripheral blood film','Coombs test','HCV, HIV','Pregnancy test','Blood group','ANA, thyroid function test, antiphospholipid antibody, H. pylori'], correct: [0,1,2,3,4,5,6], feedback: 'ITP is a diagnosis of exclusion. <span class="highlight">Peripheral smear is crucial to exclude pseudothrombocytopenia and other causes</span>.' },
+                        diagnosis: { question: 'What is your differential diagnosis?', options: ['Primary immune thrombocytopenia (ITP)','Drug-induced immune thrombocytopenia (DITP)','Infections (HIV, HCV, H. pylori, EBV, malaria)','Hypersplenism due to chronic liver disease','Myelodysplastic syndromes (MDS)','Systemic lupus erythematosus (SLE)','Antiphospholipid syndrome (APS)'], correct: [0,1,2,3,4,5,6], feedback: 'The isolated thrombocytopenia with normal other cell lines and negative workup points to primary ITP. <span class="highlight">Bone marrow biopsy is not required if atypical features are absent</span>.' },
+                        management: { question: 'How would you manage the patient?', options: ['Admit and control bleeding','Withhold medications causing bleeding (aspirin)','Start IVIG and/or anti-D immunoglobulin and/or steroid','Start PPI, calcium, vitamin D','Use antifibrinolytic agent (tranexamic acid)','Rx iron deficiency anemia','Consult hematologist','Splenectomy','Rituximab','Thrombopoietin receptor agonists (romiplostim, eltrombopag)'], correct: [0,1,2,3,4,5,6,7,8,9], feedback: 'First-line for significant bleeding: IVIG, steroids, anti-D. <span class="highlight">Avoid platelet transfusion unless life-threatening bleeding</span>.' }
+                    },
+                    modelAnswer: `**Station: Immune Thrombocytopenia (ITP) (MATCHED)**\n\nHistory: 45-year-old woman with petechiae, easy bruising, and gum bleeding for 3 days. No other active bleeding. No SOB, B-symptoms, joint pain, or mouth ulcers. No personal/family history of bleeding disorder. PMH: hypertension on amlodipine and aspirin.\n\nExamination: Vital signs normal. Petechiae and bruising. No stigmata of chronic liver disease, no lymphadenopathy or hepatosplenomegaly. Joint exam normal.\n\nInvestigations: CBC: platelets 12 × 10⁹/L, other cell lines normal. Peripheral smear: thrombocytopenia only. PT/PTT normal. Coombs negative, pregnancy test negative. HCV, HIV, ANA, antiphospholipid, H. pylori all negative. Blood group A+, normal TFT.\n\nDifferential: Primary ITP, DITP, infections, hypersplenism, MDS, SLE, APS.\n\nManagement: Admit and control bleeding. Withhold aspirin. Start IVIG and/or anti-D and/or steroid. PPI, calcium, vitamin D. Tranexamic acid. Iron for anemia. Hematology consult. Second-line: splenectomy, rituximab, TPO receptor agonists.\n\nTeaching Points: <span class="highlight">Bone marrow biopsy is not required if there are no atypical features (blasts, MDS features)</span>. ITP is a diagnosis of exclusion. Platelet transfusion is reserved for life-threatening bleeding.`
+                },
+                '2024-D2-02': {
+                    title: 'Chronic hepatitis B',
+                    system: 'GI',
+                    status: 'MATCHED',
+                    brief: 'A 30-year-old male with no previous diagnosis or chronic disease has high ALT. Labs from 10 months ago: positive HBsAg, anti-HBs <10, elevated ALT/AST.',
+                    steps: {
+                        history: { question: 'What are the key points in the focused history?', options: ['Duration and course of liver disease (acute vs chronic)','Symptoms of liver disease: fatigue, jaundice, dark urine, pale stool, pruritus','Metabolic: obesity, DM, HTN, dyslipidemia','Infectious: travel, hepatitis vaccination, contact with jaundiced persons','Parenteral exposure: needle stick, IV drug use, tattoos, transfusions','Drugs/toxins: alcohol, hepatotoxic drugs, herbal','Behavioral: unprotected sex, multiple partners','Family history of liver disease, autoimmune disease, malignancy','Past medical/surgical history, comorbidities','Systemic review: arthralgia, rash, dry eyes/mouth, thyroid symptoms'], correct: [0,1,2,3,4,5,6,7,8,9], feedback: 'Assess risk factors for HBV transmission. <span class="highlight">Ask about alcohol consumption and hepatotoxic drugs</span>.' },
+                        examination: { question: 'What focused physical examination would you perform?', options: ['Vital signs, BMI, waist circumference','General inspection: jaundice, pallor, cachexia, spider naevi, palmar erythema','Hands and arms: clubbing, leukonychia, Terry\'s nails, Dupuytren\'s contracture, asterixis','Face and eyes: icterus, xanthelasma, conjunctival pallor, Kayser-Fleischer rings','Neck: lymphadenopathy, thyroid enlargement','Abdomen: inspection, palpation, percussion, auscultation'], correct: [0,1,2,3,4,5], feedback: 'Look for stigmata of chronic liver disease. <span class="highlight">Hepatomegaly and splenomegaly are key findings</span>.' },
+                        investigations: { question: 'What investigations need to be ordered?', options: ['HBsAg (repeat at 6 months), anti-HBs, anti-HBc (IgM, IgG), HBeAg/anti-HBe','HBV DNA (viral load by PCR)','ALT, AST, ALP, GGT, total/direct bilirubin','Albumin, PT/INR, platelet count, renal profile, fasting glucose, lipid profile','Anti-HCV, anti-HDV, anti-HIV, anti-HAV IgM','Alpha-fetoprotein (AFP), abdominal ultrasound (± FibroScan)'], correct: [0,1,2,3,4,5], feedback: 'The diagnosis of chronic HBV requires HBsAg positive for >6 months. <span class="highlight">HBV DNA and ALT levels guide treatment decisions</span>.' },
+                        diagnosis: { question: 'What is your most likely diagnosis?', options: ['Chronic hepatitis B infection','Acute hepatitis B infection','Hepatitis C infection','Autoimmune hepatitis'], correct: [0], feedback: 'Positive HBsAg with elevated ALT for >6 months indicates chronic hepatitis B. <span class="highlight">Anti-HBs <10 suggests no immunity</span>.' },
+                        management: { question: 'What is your treatment plan?', options: ['Antiviral (entecavir, tenofovir)','GI clinic referral and consultation','Screen family members and encourage immunization','Undetectable HBV DNA','HBsAg loss','Normalization of ALT','Liver cirrhosis surveillance','Advanced fibrosis (≥F2 in FibroScan)','Family history of HCC','Male >40 years or female >50 years from an endemic country','US every 6 months with AFP titer'], correct: [0,1,2,3,4,5,6,7,8,9,10], feedback: 'Indications for antiviral therapy: HBV DNA >2000 IU/mL and ALT above ULN, significant fibrosis (≥F2), cirrhosis. <span class="highlight">Entecavir or tenofovir are first-line</span>.' }
+                    },
+                    modelAnswer: `**Station: Chronic Hepatitis B (MATCHED)**\n\nHistory: 30-year-old married male with no previous medical history, no needle-stick injury, no smoking or alcohol. Labs 10 months ago: positive HBsAg, anti-HBs <10 IU/L, elevated ALT and AST.\n\nExamination: Focused exam for stigmata of chronic liver disease, hepatosplenomegaly, jaundice, and signs of decompensation.\n\nInvestigations: HBsAg (repeat at 6 months), anti-HBs, anti-HBc (IgM, IgG), HBeAg/anti-HBe, HBV DNA (viral load by PCR). ALT, AST, ALP, GGT, total/direct bilirubin, albumin, PT/INR, platelet count, renal profile, fasting glucose, lipid profile. Anti-HCV, anti-HDV, anti-HIV, anti-HAV IgM. AFP, abdominal ultrasound (± FibroScan for fibrosis).\n\nDiagnosis: Chronic Hepatitis B infection.\n\nIndications to Start Antiviral Treatment: HBV DNA >2000 IU/mL and ALT above ULN. Significant fibrosis (≥F2): transient elastography >7 kPa or APRI >0.5. Cirrhosis (F4). Special conditions (treat regardless of DNA or ALT): coinfections (HIV, HDV, HCV), family history of HCC, immunosuppression drugs, extrahepatic disease, pregnant with viral load >200,000.\n\nTreatment: Antiviral (entecavir, tenofovir). GI clinic referral. Screen family members and encourage immunization.\n\nGoals of Antiviral Therapy: Undetectable HBV DNA, HBsAg loss, normalization of ALT.\n\nHCC Surveillance: Liver cirrhosis, advanced fibrosis (≥F2), family history of HCC, male >40 years or female >50 years from an endemic country. Screen with US every 6 months with AFP titer.\n\nTeaching Points: <span class="highlight">Entecavir and tenofovir have high genetic barrier to resistance</span>. Vaccinate family members. Monitor HBV DNA and ALT every 3–6 months on treatment.`
+                },
+                '2024-D3-01': {
+                    title: 'DKA in the emergency department',
+                    system: 'Endocrine',
+                    status: 'MATCHED',
+                    brief: 'An 18-year-old female known case of DM type 1 presents to ER with abdominal pain and vomiting. She missed her last insulin dose. Labs: glucose 450 mg/dL, pH 7.10, HCO3 8 mEq/L, ketones 5 mmol/L, K 5.5 mEq/L.',
+                    steps: {
+                        history: { question: 'What are the key points in the focused history?', options: ['Symptom details: onset, course, duration, severity','Potential triggers: missed insulin, dietary intake, infection, MI, stroke, pancreatitis, PE, menstruation','Diabetes management: time of diagnosis, insulin doses, compliance, home RBS, last HbA1c, prior DKA','Psychological and socioeconomic factors','Medications: SGLT2 inhibitors, steroids, antipsychotics, checkpoint inhibitors'], correct: [0,1,2,3,4], feedback: 'DKA often presents with nausea, vomiting, and abdominal pain. <span class="highlight">Ask about missed insulin doses and precipitating infections</span>.' },
+                        examination: { question: 'What focused physical examination would you perform?', options: ['General appearance: dehydration signs (dry mucous membranes, decreased skin turgor)','Fruity breath odor','Kussmaul respiration','Vital signs and GCS','Abdominal examination','Injection sites','Respiratory and neurological examination'], correct: [0,1,2,3,4,5,6], feedback: 'Look for Kussmaul breathing and dehydration. <span class="highlight">Assess mental status—DKA can cause cerebral edema</span>.' },
+                        investigations: { question: 'What are your investigations?', options: ['ECG, troponin','ABG or VBG','Blood glucose, CBC','Serum electrolytes (Na, K, Cl, HCO3)','Renal function tests (BUN, creatinine), amylase, lipase','Serum ketones (beta-hydroxybutyrate)','Urinalysis (ketones, glucose, nitrate)','HbA1c, lipid profile'], correct: [0,1,2,3,4,5,6,7], feedback: 'DKA is defined by hyperglycemia, acidosis, and ketonemia. <span class="highlight">Beta-hydroxybutyrate is the preferred ketone test</span>.' },
+                        diagnosis: { question: 'What is your diagnosis?', options: ['Diabetic ketoacidosis (primary)','Gastroenteritis','Acute pancreatitis','Other causes of abdominal pain and vomiting'], correct: [0], feedback: 'The triad of hyperglycemia, acidosis (pH 7.10, HCO3 8), and ketonemia (beta-hydroxybutyrate 5 mmol/L) confirms DKA. <span class="highlight">Abdominal pain is a common presenting symptom of DKA</span>.' },
+                        management: { question: 'What is your management plan?', options: ['Ensure ABCs and establish IV access','ICU admission','IV fluid according to hydration status','Correct electrolyte imbalances (particularly potassium)','Start insulin infusion (short-acting), rate 0.1 U/kg/h','DVT prophylaxis, GI prophylaxis','Endocrinology consultation','Frequent monitoring of blood glucose hourly','RFT, electrolytes and VBG/ABG every 2-4 hours','Continuous cardiac monitoring','Identify and treat underlying cause','Transition to subcutaneous insulin when appropriate','Patient education on DKA prevention','Discuss complications: cerebral edema risk and management'], correct: [0,1,2,3,4,5,6,7,8,9,10,11,12,13], feedback: 'Fluid resuscitation with 0.9% NaCl is first-line. <span class="highlight">Hold insulin if K <3.3 mEq/L and replace potassium first</span>. Add dextrose when glucose <200–250 mg/dL.' }
+                    },
+                    modelAnswer: `**Station: DKA in the Emergency Department (MATCHED)**\n\nHistory: 18-year-old female with type 1 DM for 5 years on insulin aspart 8 units TID and glargine 16 units OD. Presented with 24 hours of nausea, vomiting, abdominal pain, polyuria, polydipsia. Missed last insulin dose due to nausea. No recent infection. No chest pain, palpitations, SOB. No headache or visual changes.\n\nExamination: Dehydration signs. Fruity breath odor. Kussmaul respiration. Vital signs: BP, HR, RR, Temp, GCS. Abdominal exam for tenderness. Injection sites examined.\n\nInvestigations: ECG: peaked T waves, shortened QT. Blood glucose: 450 mg/dL (25 mmol/L). ABG: pH 7.10, PCO2 25 mmHg, HCO3 8 mEq/L, Na 132, K 5.5, Cl 95, anion gap 27. Beta-hydroxybutyrate 5 mmol/L. Urinalysis: glucose 4+, ketones 4+. CBC: WBC 12,000. RFT: BUN 30, creatinine 1.5. Amylase 80 U/L.\n\nDiagnosis: Diabetic Ketoacidosis (DKA).\n\nManagement: Ensure ABCs, establish IV access. ICU admission. IV fluid according to hydration status. Correct electrolyte imbalances. Start insulin infusion at 0.1 U/kg/h. DVT prophylaxis, GI prophylaxis. Endocrinology consultation. Monitor blood glucose hourly, RFT/electrolytes/VBG every 2-4 hours. Continuous cardiac monitoring. Identify and treat underlying cause. Transition to subcutaneous insulin when appropriate. Patient education. Discuss cerebral edema risk.\n\nResolution Criteria: Glucose <250 mg/dL and 2 of (pH >7.3, HCO3 >18, normal anion gap) and able to tolerate oral intake.\n\nPrecipitating Factors: Inadequate insulin treatment or noncompliance, new-onset diabetes (20–25%), acute illness (infection 30–40%, stroke, MI, pancreatitis), drugs (clozapine, olanzapine, cocaine, lithium, SGLT2 inhibitors, terbutaline).\n\nTeaching Points: <span class="highlight">Cerebral edema is a serious complication, especially in young patients</span>. Avoid rapid correction of hyperglycemia. Monitor potassium closely—insulin drives potassium intracellularly.`
+                },
+                '2024-D3-04': {
+                    title: 'IgA nephropathy',
+                    system: 'Renal',
+                    status: 'MATCHED',
+                    brief: 'A 25-year-old male presents with red-colored urine for two days following an upper respiratory tract infection. BP 150/90. Urine microscopy shows RBC casts. 24-hr urine protein 1300 mg. Albumin 30 g/L.',
+                    steps: {
+                        history: { question: 'What are the key points in the focused history?', options: ['Analysis of hematuria: onset, duration, course, amount, relieving/aggravating factors','Associated symptoms: difficulty urinating, flank pain, fever','Systemic review: joint pain, oral ulcers, skin rash, weight loss, hearing/vision changes','Preceding history: recent URTI (pharyngitis, sore throat)','Past history: similar episodes, renal stones, PKD, CKD, hepatitis, HIV','Medications: NSAIDs, antibiotics, anticoagulants','Comorbidities: DM, HTN, cardiovascular disease','Family history of renal disease'], correct: [0,1,2,3,4,5,6,7], feedback: 'IgA nephropathy classically presents with gross hematuria 1–2 days after a URTI (synpharyngitic). <span class="highlight">Distinguish from post-infectious GN which occurs 1–3 weeks after infection</span>.' },
+                        examination: { question: 'What focused physical examination would you perform?', options: ['General examination: looks well/ill, body built','Vital signs including BP (with orthostatic hypotension), pulse, temp, RR, O2 sat, volume status','Cardiovascular: murmurs, JVP','Respiratory: crackles, decreased entry','Abdomen: renal masses, organomegaly, ascites','Extremities: edema','Skin: rashes, purpura','Throat: signs of recent URTI','Urine dipstick (bedside)'], correct: [0,1,2,3,4,5,6,7,8], feedback: 'Hypertension is a poor prognostic factor. <span class="highlight">Look for signs of systemic vasculitis or SLE</span>.' },
+                        investigations: { question: 'What investigations would you order?', options: ['CBC with differential and coagulation profile','Renal function: urea, creatinine, electrolytes, LFT (albumin), lipid profile','Urine: routine analysis, microscopy (RBC casts), urine protein/Cr ratio or 24-hr protein','Imaging: renal ultrasound','Serology: hepatitis profile, HIV, syphilis','Autoimmune: ANA, anti-dsDNA, ANCA, complements (C3, C4), cryoglobulin','Infection-related: ASO titer'], correct: [0,1,2,3,4,5,6], feedback: 'RBC casts confirm glomerular hematuria. <span class="highlight">Normal complement levels favor IgA nephropathy over post-infectious GN</span>.' },
+                        diagnosis: { question: 'What is your interpretation and most likely diagnosis?', options: ['Sub-nephrotic proteinuria with RBC casts → most likely nephritic syndrome (IgA nephropathy suspected)','Nephrotic syndrome','Post-infectious glomerulonephritis','Lupus nephritis'], correct: [0], feedback: 'The sub-nephrotic proteinuria (1300 mg/day), hematuria with RBC casts, and recent URTI point to IgA nephropathy. <span class="highlight">Renal biopsy is the gold standard for diagnosis</span>.' },
+                        management: { question: 'Outline the management of IgA nephropathy.', options: ['General measures: education, lifestyle (low salt/protein diet, exercise, smoking cessation)','ACE inhibitors/ARBs ± SGLT2i if persistent proteinuria','Monitor: BP, renal function, proteinuria','Nephrology referral','Immunosuppression (steroids/cyclophosphamide) in progressive or high-risk disease'], correct: [0,1,2,3,4], feedback: 'ACE inhibitors/ARBs are first-line for proteinuria and BP control. <span class="highlight">Cyclophosphamide is used for rapidly progressive glomerulonephritis (RPGN) with crescents</span>.' }
+                    },
+                    modelAnswer: `**Station: IgA Nephropathy (MATCHED)**\n\nHistory: 25-year-old male with red-colored urine for two days following a URTI. BP 150/90. No fever. Systemic review unremarkable. No previous similar episodes. No renal stones, PKD, CKD, hepatitis, or HIV. No NSAIDs, antibiotics, or anticoagulants. No family history of renal disease.\n\nExamination: Looks well, average body built. Vitals: BP 150/90, other vitals normal. No edema, rash, or purpura. Throat: signs of recent URTI. Urine dipstick: blood 3+, protein 2+.\n\nInvestigations: CBC, coagulation profile normal. Renal function: creatinine normal, albumin 30 g/L. Urine: RBC casts, 24-hr protein 1300 mg. Autoimmune and viral screen negative. US-KUB normal.\n\nDiagnosis: Sub-nephrotic proteinuria with RBC casts → most likely nephritic syndrome (IgA nephropathy suspected).\n\nConfirmation: Renal biopsy.\n\nDifferential Diagnosis: IgA nephropathy, post-infectious GN, lupus nephritis/vasculitis, UTI with hematuria.\n\nManagement: General measures: education, lifestyle. ACE inhibitors/ARBs ± SGLT2i if persistent proteinuria. Monitor BP, renal function, proteinuria. Nephrology referral. Immunosuppression in progressive or high-risk disease. Cyclophosphamide specifically for RPGN with crescents.\n\nPrognostic Factors: Persistent proteinuria >1 g/day, hypertension, impaired GFR at presentation, crescents on biopsy.\n\nTeaching Points: <span class="highlight">IgA nephropathy occurs within days of infection, while post-infectious GN occurs 1–3 weeks after</span>. Normal complement levels favor IgA nephropathy.`
+                },
+                '2024-D3-06': {
+                    title: 'Infective endocarditis',
+                    system: 'Cardiology',
+                    status: 'MATCHED',
+                    brief: 'A 30-year-old male living on a farm for 6 months presents with fever and night sweats for 3 months and SOB for 5 days. History of contact with sheep and drinking their milk. Exam: macular rash on palms/soles, grade 3/6 diastolic murmur, splenomegaly.',
+                    steps: {
+                        history: { question: 'What are the key points in the focused history?', options: ['Fever: onset, duration, pattern, relapsing nature','Shortness of breath: onset, exertion, orthopnea','Chest symptoms: chest pain, palpitations','Neurological symptoms: headache, photophobia, loss of consciousness, focal weakness','Gastrointestinal symptoms: nausea, vomiting, abdominal pain','Skin manifestations: red spots, painful nodules','Musculoskeletal symptoms: back pain, joint pain','Contact with sick individuals or animals','Recent travel history','History of raw milk ingestion','Past medical history: valvular heart disease, previous brucellosis'], correct: [0,1,2,3,4,5,6,7,8,9,10], feedback: 'Brucella endocarditis should be suspected in patients with fever, night sweats, and animal contact (sheep, goats, cattle) or unpasteurized dairy. <span class="highlight">Ask about back pain (spondylitis) and joint pain</span>.' },
+                        examination: { question: 'What focused physical examination would you perform?', options: ['Vital signs: temperature, pulse, BP, RR, O2 sat','General examination: overall appearance, lymph nodes, pallor, jaundice, Roth spots','Skin and extremities: rash, splinter hemorrhages, Osler nodes, Janeway lesions, clubbing','Cardiovascular examination: new murmurs, S3 gallop','Abdominal examination: tenderness, hepatomegaly, splenomegaly','Neurological examination: meningeal signs, focal weakness','MSK examination – back'], correct: [0,1,2,3,4,5,6], feedback: 'Look for peripheral stigmata of endocarditis: Osler nodes, Janeway lesions, splinter hemorrhages, Roth spots. <span class="highlight">A new diastolic murmur is a red flag for aortic root abscess</span>.' },
+                        investigations: { question: 'What investigations would you order?', options: ['CBC with differential','Blood cultures: at least 3 separate samples','Other cultures: urine and sputum','Inflammatory markers: ESR, CRP','Liver and renal function tests','Cardiac enzymes: troponin, CK','Urine analysis','Serology: Brucella titer','ECG, CXR','Echocardiography (to assess vegetations, valve involvement, function)','CT chest, abdomen, and pelvis with IV contrast'], correct: [0,1,2,3,4,5,6,7,8,9,10], feedback: 'Blood cultures are the cornerstone of diagnosis. <span class="highlight">Brucella is a fastidious organism requiring prolonged incubation</span>.' },
+                        diagnosis: { question: 'What is your provisional diagnosis based on these findings?', options: ['Brucella endocarditis complicated by an aortic root abscess','Infective endocarditis due to Staphylococcus aureus','Rheumatic fever','Culture-negative endocarditis'], correct: [0], feedback: 'The history of sheep contact and raw milk ingestion, positive Brucella titer, Gram-negative coccobacilli on culture, and aortic root abscess on imaging confirm Brucella endocarditis. <span class="highlight">Brucella endocarditis is a serious complication requiring prolonged antibiotics and surgery</span>.' },
+                        management: { question: 'What is your management plan?', options: ['Infectious Disease team guidance on brucellosis management','Cardiothoracic surgery for evaluation of aortic root abscess and possible drainage','Aminoglycoside: Gentamicin or Streptomycin','Doxycycline 100 mg orally twice daily','Rifampin 600–900 mg orally once daily','Duration: at least 6 months'], correct: [0,1,2,3,4,5], feedback: 'Brucella endocarditis requires combination antibiotics (doxycycline + rifampin + aminoglycoside) for at least 6 months. <span class="highlight">Surgical drainage of aortic root abscess is often necessary</span>.' }
+                    },
+                    modelAnswer: `**Station: Infective Endocarditis – Brucella with Aortic Root Abscess (MATCHED)**\n\nHistory: 30-year-old male living on a farm for 6 months presents with fever and night sweats for 3 months and SOB for 5 days. History of contact with sheep and drinking their milk. No headache, photophobia, or focal weakness. No nausea, vomiting, or abdominal pain. Back and joint pain present.\n\nExamination: Macular rash on palms and soles. Grade 3/6 diastolic murmur. Splenomegaly (2 cm). Vital signs: temp, pulse, BP, RR, O2 sat. General exam: pallor, jaundice, Roth spots. Skin: splinter hemorrhages, Osler nodes, Janeway lesions, clubbing. CVS: new murmurs, S3. Abdomen: hepatosplenomegaly. Neuro: meningeal signs, focal weakness. MSK: back tenderness.\n\nInvestigations: CBC, blood cultures (at least 3 sets), urine and sputum cultures, ESR, CRP, LFT, RFT, troponin, CK, urinalysis, Brucella titer, ECG, CXR, echocardiography, CT chest/abdomen/pelvis.\n\nFindings: Blood culture: Gram-negative coccobacilli. ECG: prolonged PR, broad QRS with LBBB pattern. Echo and CT: para-aortic collection. Brucella titer: 1:2560.\n\nDiagnosis: Brucella endocarditis complicated by aortic root abscess.\n\nManagement: ID team guidance. Cardiothoracic surgery for evaluation of aortic root abscess and possible drainage. Gentamicin or Streptomycin. Doxycycline 100 mg PO BD. Rifampin 600–900 mg PO OD. Duration: at least 6 months.\n\nComplications: Heart block, arrhythmias, CHF, systemic emboli, splenic infarction/abscess, death.\n\nTeaching Points: <span class="highlight">Brucella endocarditis often affects the aortic valve</span>. Aortic root abscess can cause heart block and requires urgent surgical evaluation. Prolonged combination antibiotic therapy (≥6 months) is essential.`
+                },
+                '2024-D5-07': {
+                    title: 'Granulomatosis with polyangiitis (GPA)',
+                    system: 'Rheumatology',
+                    status: 'MATCHED',
+                    brief: 'A 43-year-old female presents to ER with hemoptysis and SOB for 3 days. History of fatigue and low-grade fever for 4 weeks, joint pain, recurrent sinusitis with nasal discharge for 4 months. Exam: respiratory distress, pale, nose deformed, scattered crackles and wheezes, knee effusion. C-ANCA positive. CXR shows diffuse pulmonary hemorrhage.',
+                    steps: {
+                        history: { question: 'What are the key points in the focused history?', options: ['Hemoptysis: with cough, vomiting, or from nose; duration, onset, amount, frequency','SOB: onset, duration, severity, cough, wheezes, stridor, chest pain, orthopnea, sputum','Other sources of bleeding: epistaxis, bruises, hematochezia','Associated symptoms: fever, weight loss, anorexia, night sweats','Vasculitis symptoms: nose deformity, discharge, blockage, ear pain, hearing loss, red eye, joint pain, skin rashes, oral/genital ulcers, neurological symptoms, urine changes','SLE/APS symptoms: malar rash, oral ulcer, hair loss, photosensitivity, thrombosis, recurrent abortions','Systemic review: chest pain, abdominal pain, CNS changes','TB or other infection: contact, travel','Chronic medical/surgical history, social history, drugs/allergies, family history'], correct: [0,1,2,3,4,5,6,7,8,9], feedback: 'GPA should be suspected with upper respiratory (sinusitis, nasal deformity), lower respiratory (hemoptysis, nodules), and renal involvement. <span class="highlight">C-ANCA is positive in 90% of GPA cases</span>.' },
+                        examination: { question: 'What focused physical examination would you perform?', options: ['General look: pallor, respiratory distress, airway patency, stability','Vital signs: BP, HR, RR, Temp, O2','Hands and nails: pallor, nodules, ulcers, clubbing, pulses, wrist drop','Head and face: hair loss, ear, nose deformity, eye redness, nose/oral ulcers, malar rash','Neck exam: lymph nodes, raised JVP','Full respiratory examination: breathing sounds, crackles, dullness','CVS: heart sounds, murmur, HF signs, raised JVP, lower limb edema','GIT: tenderness, organomegaly, masses','GTU: flank tenderness, uremic signs, overload, urine dipstick','CNS exam: LOC, motor and sensory exam','MSK exam: muscle, skin, joints'], correct: [0,1,2,3,4,5,6,7,8,9,10], feedback: 'Look for saddle nose deformity, nasal crusting, and oral ulcers. <span class="highlight">Pulmonary exam may reveal crackles and dullness from hemorrhage or effusion</span>.' },
+                        investigations: { question: 'What investigations would you order?', options: ['CBC with differential, crossmatch','Chemistry including creatinine and GFR','LFTs','Inflammatory markers: ESR, CRP','Serology: ANCA (C and P), anti-GBM, ANA, APS, HCV, HBV, HIV','Urinalysis with microscopy','CXR, ABG, sputum culture for TB (AFB), fungal','CT chest and bronchoscopy with BAL + biopsy if possible','Coagulation profile, peripheral smear','CT nasal'], correct: [0,1,2,3,4,5,6,7,8,9], feedback: 'C-ANCA is highly specific for GPA. <span class="highlight">Bronchoscopy with BAL can confirm alveolar hemorrhage</span>.' },
+                        diagnosis: { question: 'What is your diagnosis?', options: ['Granulomatosis with polyangiitis (Wegener disease)','Diffuse pulmonary hemorrhage','SLE','Antiphospholipid syndrome (APS)','Tuberculosis'], correct: [0,1], feedback: 'The combination of upper respiratory (sinusitis, nasal deformity), lower respiratory (hemoptysis, diffuse alveolar hemorrhage), positive C-ANCA, and systemic symptoms confirms GPA. <span class="highlight">Diffuse pulmonary hemorrhage is a severe manifestation</span>.' },
+                        management: { question: 'What are the lines of management?', options: ['ICU admission','Supportive care (airway protection, intubation if needed, O2 supply)','Blood transfusion','Pulse steroid (methylprednisolone 0.5–1 g IV for 3–5 days) with broad-spectrum antibiotics','Immunosuppressant (cyclophosphamide or rituximab)','Consult Rheumatology','Education and counseling'], correct: [0,1,2,3,4,5,6], feedback: 'Diffuse alveolar hemorrhage is a medical emergency. <span class="highlight">Pulse steroids and cyclophosphamide or rituximab are first-line</span>.' }
+                    },
+                    modelAnswer: `**Station: Granulomatosis with Polyangiitis (GPA) (MATCHED)**\n\nHistory: 43-year-old female with fatigue and low-grade fever for 4 weeks, sudden onset of coughing fresh blood for 3 days, and SOB since this morning. On-and-off joint pain (wrists, knees) for 2 weeks. Recurrent sinusitis with nasal discharge for 4 months. No TB exposure. Non-smoker.\n\nExamination: Respiratory distress, pale. Nose deformed. Scattered crackles and occasional wheezes in chest. Mild knee effusion. Urine dipstick normal.\n\nInvestigations: WBC 8.1, Hb 6.1, Platelets 210,000. ESR 68, CRP negative. C-ANCA positive. Sputum culture and AFB pending (gram stain negative). U/A normal. LFT, creatinine, chemistry normal. Coagulation normal. CXR: bilateral alveolar infiltrates. HCV, HBV, HIV negative. Bronchoscopy not done yet.\n\nDiagnosis: Granulomatosis with polyangiitis (Wegener disease) with diffuse pulmonary hemorrhage.\n\nManagement: ICU admission. Supportive care (airway protection, O2, intubation if needed). Blood transfusion. Pulse methylprednisolone (0.5–1 g IV for 3–5 days) with broad-spectrum antibiotics. Immunosuppressant (cyclophosphamide or rituximab). Rheumatology consult. Education and counseling.\n\nTeaching Points: <span class="highlight">GPA is a small vessel vasculitis with upper respiratory, lower respiratory, and renal involvement</span>. C-ANCA (anti-PR3) is positive in 90%. Diffuse alveolar hemorrhage is life-threatening and requires urgent immunosuppression.`
+                },
+                '2024-D6-01': {
+                    title: 'Septic shock secondary to UTI',
+                    system: 'Infectious Disease',
+                    status: 'MATCHED',
+                    brief: 'A 70-year-old male known case of DM, HTN, IHD, Alzheimer presents with fatigue and dizziness for 2 days. BP 125/82, HR 44, O2 sat 94%. Progresses to septic shock with BP 80/50, HR 120, O2 88%, anuria, elevated LFT/RFT. CT shows perinephric fat stranding. Urine culture grows ESBL Klebsiella.',
+                    steps: {
+                        history: { question: 'What are the key points in the focused history?', options: ['Chief complaints: fatigue (onset, course, relation to activity), dizziness (onset, type, triggers)','Associated symptoms: fever, weight loss, night sweats, decreased appetite','Dizziness with hearing loss, tinnitus, nausea, vomiting, visual changes, headache, weakness, numbness, speech changes, palpitations, chest pain','Review of systems: respiratory, cardiovascular, CNS, GI, GU (dysuria, hematuria, recurrent UTIs, catheter use), MSK, skin','Past medical history: hospital admissions, surgeries, transfusions, chronic diseases','Medications and allergies','Family history','Social and exposure history: smoking, alcohol, travel, sick contacts'], correct: [0,1,2,3,4,5,6,7], feedback: 'Elderly patients may present atypically with sepsis (fatigue, confusion, dizziness). <span class="highlight">Ask about urinary symptoms, catheter use, and recent hospitalizations</span>.' },
+                        examination: { question: 'What important areas would you examine?', options: ['Vital signs including orthostatic BP, heart rate, rhythm, RR, O2 sat, temperature','General inspection: level of consciousness, orientation, dehydration, malnutrition, skin color, pallor, jaundice, cyanosis, bruises, rashes, ulcers, pressure sores','Cardiovascular: heart rate, rhythm, murmurs, extra heart sounds, JVP, peripheral pulses, signs of heart failure','Respiratory: breath sounds, symmetry, signs of distress','CNS: cranial nerves, motor strength, tone, sensory, coordination, gait, reflexes','Abdomen: inspection, palpation, percussion, auscultation, hepatosplenomegaly','Other relevant systems: ENT, eyes, musculoskeletal, genitourinary','Special tests: orthostatic BP, cardiac auscultation, neurological bedside tests'], correct: [0,1,2,3,4,5,6,7], feedback: 'Bradycardia (HR 44) with sepsis is a red flag—may indicate heart block or increased intracranial pressure. <span class="highlight">Assess for signs of organ dysfunction: altered mental status, oliguria, mottled skin</span>.' },
+                        investigations: { question: 'What investigations would you order?', options: ['Arterial blood gas (oxygenation, lactate, hemoglobin)','CBC, coagulation profile','Inflammatory markers: CRP, procalcitonin, ESR','Renal and liver function tests','Electrolytes','Urinalysis and urine culture','Blood cultures','ECG to exclude myocardial infarction','Chest X-ray','CT brain to evaluate neurological causes for decreased GCS','Renal imaging (US or CT) to exclude obstructing stone'], correct: [0,1,2,3,4,5,6,7,8,9,10], feedback: 'Sepsis workup includes blood cultures, lactate, and imaging of the suspected source. <span class="highlight">CT abdomen showing perinephric fat stranding suggests pyelonephritis</span>.' },
+                        diagnosis: { question: 'What is your most likely diagnosis?', options: ['Acute pyelonephritis complicated by sepsis','Septic shock','Urosepsis','Cardiogenic shock'], correct: [0,1,2], feedback: 'The patient has acute pyelonephritis (CT perinephric fat stranding) progressing to sepsis (SOFA ≥2) and then septic shock (BP 80/50, HR 120, O2 88%, anuria, elevated LFT/RFT). <span class="highlight">Urine culture confirmed ESBL Klebsiella pneumoniae</span>.' },
+                        management: { question: 'What is your management?', options: ['Airway: ensure airway is secure','Breathing: supplemental oxygen; intubate if necessary','Circulation: initiate IV fluid resuscitation promptly','Admit to ICU for close monitoring','Start vasopressors or inotropes if indicated','Escalate antibiotics and urgent referral to infectious disease specialist','Continue meropenem','Duration: 10–14 days','Discontinue vancomycin','Target MAP ≥65','Lactate level trending down'], correct: [0,1,2,3,4,5,6,7,8,9,10], feedback: 'Septic shock management: ABCs, IV fluids, vasopressors (norepinephrine first-line), broad-spectrum antibiotics. <span class="highlight">For ESBL Klebsiella, meropenem is appropriate</span>.' }
+                    },
+                    modelAnswer: `**Station: Septic Shock Secondary to UTI (MATCHED)**\n\nHistory: 70-year-old male with DM, HTN, IHD, Alzheimer presents with fatigue and dizziness for 2 days. Associated with dysuria and right flank pain. Febrile. GCS acutely drops to 11.\n\nExamination: Vital signs: BP 125/82, HR 44, O2 sat 94%. Progresses to BP 80/50, HR 120, O2 88%, RR 26, anuric. General: looks ill, dehydrated. CVS: bradycardic initially. Abdomen: right flank tenderness. CNS: GCS 11.\n\nInvestigations: Leukocytosis, elevated ESR/CRP, high procalcitonin, raised lactate. CT abdomen: perinephric fat stranding. Urine culture: ESBL Klebsiella pneumoniae sensitive to Tazocin and Amikacin. Blood cultures negative.\n\nDiagnosis: Acute pyelonephritis complicated by sepsis, progressing to septic shock.\n\nManagement: ABCs: secure airway, supplemental O2, IV fluid resuscitation. ICU admission. Vasopressors/inotropes if indicated. Escalate antibiotics to meropenem. Discontinue vancomycin. Duration 10–14 days. Monitor MAP ≥65, lactate trending down.\n\nTeaching Points: <span class="highlight">Elderly patients with sepsis may present with bradycardia and atypical symptoms</span>. ESBL-producing organisms require carbapenems. Early goal-directed therapy improves outcomes.`
+                },
+                '2024-D6-03': {
+                    title: 'Pulmonary tuberculosis',
+                    system: 'Respiratory',
+                    status: 'MATCHED',
+                    brief: 'A 45-year-old male presents to clinic with hemoptysis for 1 month. Blood amount minimal, 2–3 times/day. Productive cough with yellowish sputum, weight loss, night sweats. From India, came to KSA 3 months ago. Non-smoker. Exam: right lung crackles. AFB positive on 3 samples, TB PCR positive. CXR: multifocal patchy opacities in right upper lobe.',
+                    steps: {
+                        history: { question: 'What are the key points in the focused history?', options: ['Hemoptysis: onset, duration, amount, character, times per day','Respiratory history: cough severity, dry/productive, sputum color/amount, SOB, exposures','Associated symptoms: chest pain, palpitations, calf pain (PE), bleeding elsewhere','Constitutional symptoms: fever, night sweats, weight loss (malignancy, TB)','Past medical history: CTDs, TB, malignancy, admissions, surgeries','Smoking (pack/year) or alcohol intake','Occupational and environmental history','Medications: anticoagulation','Contact with sick patients / TB','Travel history','Family history of TB or malignancy'], correct: [0,1,2,3,4,5,6,7,8,9,10], feedback: 'TB should be suspected with chronic cough, hemoptysis, weight loss, night sweats, and risk factors (endemic area, contact). <span class="highlight">Ask about travel from endemic regions and immunosuppression</span>.' },
+                        examination: { question: 'What focused physical examination would you perform?', options: ['Vital signs: BP, HR, RR, Temp, O2 sat','General physical examination: general look, hands (clubbing), neck/head (JVP, eyes for pallor, lymph nodes, thyroid)','Chest: inspection, palpation, percussion, auscultation','Cardiovascular: signs of murmurs or abnormal heart sounds','Lower limbs for edema'], correct: [0,1,2,3,4], feedback: 'Look for cachexia, lymphadenopathy, and signs of extrapulmonary TB. <span class="highlight">Chest exam may reveal crackles, bronchial breathing, or dullness</span>.' },
+                        investigations: { question: 'What are the most important investigations?', options: ['CBC, renal profile, liver profile','ESR, CRP','AFB, TB PCR, sputum culture','CXR, CT chest'], correct: [0,1,2,3], feedback: 'Sputum AFB smear and culture are the gold standard. <span class="highlight">TB PCR is rapid and highly specific</span>.' },
+                        diagnosis: { question: 'What is your diagnosis?', options: ['Pulmonary TB','Lung cancer','Bronchiectasis','Lung abscess'], correct: [0], feedback: 'The positive AFB smears and TB PCR confirm pulmonary TB. <span class="highlight">CXR shows multifocal patchy opacities in the right upper lobe</span>.' },
+                        management: { question: 'What is your management for this patient?', options: ['Airborne isolation','Notification','Education about management plan','Start anti-TB medications, pyridoxine','Screen for HIV','Baseline CBC, renal profile, liver profile','Test for visual acuity (ophthalmology consultation)','Screen contacts for TB','Refer to pulmonologist','Duration: 6 months','Side effects of INH: hepatitis, peripheral neuropathy, drug-induced lupus, nausea'], correct: [0,1,2,3,4,5,6,7,8,9,10], feedback: 'Standard anti-TB regimen: 2 months of INH/RIF/PZA/EMB, followed by 4 months of INH/RIF. <span class="highlight">Pyridoxine prevents INH-induced peripheral neuropathy</span>.' }
+                    },
+                    modelAnswer: `**Station: Pulmonary Tuberculosis (MATCHED)**\n\nHistory: 45-year-old male from India, in KSA for 3 months, presents with hemoptysis for 1 month (2–3 times/day, minimal blood), productive cough with yellowish sputum, weight loss, and night sweats. No chest pain or palpitations. Non-smoker, works as a cashier.\n\nExamination: Temp 36.8, SpO2 96% RA, RR 18, BP 125/75. No pallor, no lymphadenopathy, JVP not raised. Chest: right lung crackles.\n\nInvestigations: CBC, renal profile, liver profile normal. ESR 108. Three sputum samples AFB positive, TB PCR positive. Culture pending. CXR and CT: multifocal patchy opacities in right upper lobe.\n\nDiagnosis: Pulmonary TB.\n\nManagement: Airborne isolation. Notification. Education. Start anti-TB medications (INH/RIF/PZA/EMB for 2 months, then INH/RIF for 4 months). Pyridoxine. Screen for HIV. Baseline CBC, renal, liver profile. Visual acuity test. Screen contacts. Refer to pulmonologist. Duration: 6 months.\n\nSide Effects of INH: Hepatitis, peripheral neuropathy, drug-induced lupus, nausea.\n\nTeaching Points: <span class="highlight">Pyridoxine (vitamin B6) is given with INH to prevent peripheral neuropathy</span>. Airborne isolation is required until sputum AFB is negative. Directly observed therapy (DOT) improves adherence.`
+                },
+                '2024-D6-06': {
+                    title: 'Anterior / lateral myocardial infarction',
+                    system: 'Cardiology',
+                    status: 'MATCHED',
+                    brief: 'A 65-year-old Saudi male known case of DM presents to ER with chest pain for 1 hour. Sudden onset, severe, compressing, radiating to neck/jaw/left arm, associated with nausea and sweating. HR 50, BP 95/60, SpO2 95%. ECG: ST elevation I, aVL, V1–V6, AV block, RBBB. Troponin positive. Echo: EF 35%, hypokinetic LAD territories.',
+                    steps: {
+                        history: { question: 'What are the key points in the focused history?', options: ['Chest pain: duration, location, onset, severity, character, radiation','Aggravating and relieving factors','Associated symptoms: nausea, vomiting, SOB, orthopnea, PND, syncope','History of similar pain before','Comorbidities: DM, HTN, dyslipidemia','Smoking, alcohol, substance abuse','Medications: aspirin, NSAIDs','Family history of premature CAD, IHD, dyslipidemia'], correct: [0,1,2,3,4,5,6,7], feedback: 'Typical ACS chest pain is substernal, pressure-like, radiating to the left arm/jaw, associated with diaphoresis and nausea. <span class="highlight">Atypical presentations are common in diabetics and the elderly</span>.' },
+                        examination: { question: 'What focused physical examination would you perform?', options: ['Vital signs: BP, HR, RR, Temp, SpO2','General appearance, JVP','CVS inspection: scar, dilated vein, visible pulsation, deformity','CVS palpation: PMI, thrill, heave','CVS auscultation: heart sounds, added sounds, murmurs','Chest for crepitations, lower limb edema'], correct: [0,1,2,3,4,5], feedback: 'Assess for signs of heart failure and cardiogenic shock. <span class="highlight">New murmurs may indicate mitral regurgitation from papillary muscle dysfunction</span>.' },
+                        investigations: { question: 'What workup would you order?', options: ['ECG','Cardiac enzymes / troponin','Chest X-ray','Echo','CBC, PT, PTT, INR, chemistry'], correct: [0,1,2,3,4], feedback: 'ECG is the most important initial test—obtain within 10 minutes. <span class="highlight">Troponin confirms myocardial injury</span>.' },
+                        diagnosis: { question: 'What is your top diagnosis?', options: ['Acute anterior wall myocardial infarction (AWMI) complicated by AV block','Acute pericarditis','Aortic dissection','Pulmonary embolism'], correct: [0], feedback: 'The ECG shows ST elevation in I, aVL, V1–V6 with AV block and RBBB, consistent with acute anterior/lateral STEMI. <span class="highlight">Troponin positive and echo shows EF 35% with hypokinetic LAD territories</span>.' },
+                        management: { question: 'What is your management plan?', options: ['Aspirin loading','Plavix or ticagrelor loading','Heparin','O2','Consult cardiology','Activate cath lab for PCI','Temporary pacemaker (TPM)','CCU admission','DAPT (ASA + Plavix/ticagrelor)','Beta-blockers','ACEi or ARBs or Entresto','Statin','PPM if AVB >24 hours'], correct: [0,1,2,3,4,5,6,7,8,9,10,11,12], feedback: 'Primary PCI is the preferred reperfusion strategy if available within 90–120 minutes. <span class="highlight">Dual antiplatelet therapy and anticoagulation are essential</span>.' }
+                    },
+                    modelAnswer: `**Station: Anterior/Lateral STEMI Complicated by AV Block (MATCHED)**\n\nHistory: 65-year-old male with DM and HTN for 20 years, active smoker, presents with 1 hour of sudden severe compressing chest pain involving the left side, radiating to neck, jaw, and left arm. Increased with exertion, decreased with rest. Associated with nausea and sweating. No prior similar episode.\n\nExamination: Looks ill, in active pain, sweating, mildly tachypneic. HR 50, BP 95/60, SpO2 95%. JVP not raised. CVS: S1+S2+0, no murmurs. Chest: few crepitations. No LL edema.\n\nInvestigations: ECG: sinus rhythm, ST elevation in I, aVL, V1–V6, AV block, RBBB. Troponin positive. CXR normal. CBC, coagulation, chemistry normal. Echo: severe LV dysfunction, EF 35%, hypokinetic LAD territories.\n\nDiagnosis: Acute anterior wall myocardial infarction (AWMI) complicated by AV block.\n\nManagement: Aspirin loading (300 mg). Plavix or ticagrelor loading (300–600 mg). Heparin. O2 if SpO2 <90%. Consult cardiology. Activate cath lab for PCI. Temporary pacemaker (TPM). CCU admission. DAPT. Beta-blockers. ACEi/ARB/Entresto. Statin. PPM if AVB >24 hours.\n\nComplications of MI: Post-MI angina, heart failure, cardiogenic shock, pulmonary edema, acute MR, VSR, LV thrombus, pericarditis, Dressler's syndrome.\n\nDischarge Advice: Smoking cessation, medication compliance, regular follow-up, rehabilitation, BP control, blood sugar control.\n\nTeaching Points: <span class="highlight">Anterior MI can be complicated by AV block due to septal involvement</span>. Temporary pacing may be required. Primary PCI is the preferred reperfusion strategy.`
+                },
+                '2024-D5-02': {
+                    title: 'Primary biliary cholangitis (PBC)',
+                    system: 'GI',
+                    status: 'MATCHED',
+                    brief: 'A 45-year-old female presents with yellowish discoloration of eyes for 3 months, associated with itchiness and fatigue. PMH: RA, dyslipidemia, hypothyroidism. Exam: jaundiced sclera, periorbital xanthoma, ulnar deviation of MCPs, scratch marks. Labs: ALP 780, AMA positive, ANA negative. Ultrasound: nodular liver surface, regenerative nodules.',
+                    steps: {
+                        history: { question: 'What are the key points in the focused history?', options: ['Onset, course, associated symptoms: fever, fatigue, weight loss, decreased appetite','Pruritus, nausea, vomiting, abdominal pain, distension, change in bowel habit, altered LOC, bleeding, bruising','Exacerbating factors: meds, illness, exercise','Previous similar episodes','Risk factors for viral hepatitis: blood transfusion, IV drug abuse, tattoos, hemodialysis, unprotected sex','PMH: chronic liver disease, dyslipidemia, autoimmune disease (DM, RA, vitiligo, SLE, IBD, Sjögren)','Family history of viral hepatitis, autoimmune disease','PSH: cholecystectomy, ERCP','Medications: statins, antibiotics, antiepileptics, herbal, OTC','Social history: alcohol, smoking'], correct: [0,1,2,3,4,5,6,7,8,9], feedback: 'PBC is characterized by cholestatic jaundice, pruritus, and fatigue. <span class="highlight">Strongly associated with other autoimmune diseases (RA, Sjögren, thyroiditis)</span>.' },
+                        examination: { question: 'What focused physical examination would you perform?', options: ['Vital signs, BMI, body built, LOC','Skin: xanthomas, xanthelasma, features of connective tissue disease','Lymphadenopathy, skin rashes (drug rash)','Asterixis, digital clubbing, Dupuytren\'s contracture','Fetor hepaticus, pallor, jaundice, parotid enlargement, spider nevi, caput medusa','Abdomen: ascites, hepatosplenomegaly, mass','Lower limb edema'], correct: [0,1,2,3,4,5,6], feedback: 'Look for stigmata of chronic liver disease and autoimmune features. <span class="highlight">Xanthelasma and xanthomas are common in PBC due to hypercholesterolemia</span>.' },
+                        investigations: { question: 'What investigations would you order?', options: ['CBC, renal function, electrolytes','LFTs, ALP, bilirubin, albumin, INR','Lipid profile','Viral hepatitis serology (HCV, HBsAg, anti-HBc)','Autoimmune markers: AMA, ANA, ASMA, anti-TTG','Ultrasound abdomen'], correct: [0,1,2,3,4,5], feedback: 'The hallmark of PBC is elevated ALP with positive AMA (90–95% of cases). <span class="highlight">AMA is highly specific for PBC</span>.' },
+                        diagnosis: { question: 'What is your diagnosis?', options: ['Primary biliary cholangitis (PBC)','Primary sclerosing cholangitis (PSC)','Autoimmune hepatitis','Drug-induced liver injury'], correct: [0], feedback: 'The combination of cholestatic jaundice, pruritus, positive AMA, elevated ALP, and compatible ultrasound findings confirms PBC. <span class="highlight">AMA is present in 90–95% of PBC patients</span>.' },
+                        management: { question: 'How would you manage this patient?', options: ['Hepatology consultation for long-term management','Ursodeoxycholic acid (13–15 mg/kg/day)','Obeticholic acid, fibrates','Pruritus: warm baths, antihistamine, cholestyramine; if refractory: naltrexone, rifampin, liver transplant','Screen for osteoporosis, give calcium & vitamin D; EGD for varices; US every 6 months for HCC; HAV & HBV vaccination','Liver transplant for decompensated cirrhosis, HCC, refractory pruritus'], correct: [0,1,2,3,4,5], feedback: 'Ursodeoxycholic acid is first-line therapy and improves liver biochemistry and slows progression. <span class="highlight">Obeticholic acid is a second-line agent for inadequate response to UDCA</span>.' }
+                    },
+                    modelAnswer: `**Station: Primary Biliary Cholangitis (PBC) (MATCHED)**\n\nHistory: 45-year-old female presents with yellowish discoloration of sclera and skin for 3 months, associated with itchiness and fatigue. No fever, weight loss, abdominal pain, or distension. No change in bowel habit. No bleeding. PMH: RA, dyslipidemia, hypothyroidism. Medications: methotrexate 7.5 mg weekly, atorvastatin 20 mg OD, levothyroxine 100 mcg OD. Review of systems: symmetrical small joint pain, dark urine.\n\nExamination: Alert and oriented, not distressed. Vital signs stable. Jaundiced sclera with periorbital xanthoma. Ulnar deviation of MCP joints, scratch marks over forearm. Abdomen: soft, no organomegaly, no shifting dullness.\n\nInvestigations: WBC 8,000, Hb 14, Platelets 190,000. Cr 90, BUN 6. ALT 80, AST 95, ALP 780, total bilirubin 50, direct 30. INR 1.2, PTT 30, albumin 40. LDL 130, cholesterol 300, triglycerides 100. HCV Ab negative, HBsAg/anti-HBs/anti-HBc negative. AMA positive (1:160), ANA negative, ASMA negative, anti-TTG IgA negative. Ultrasound: nodular liver surface, round edge, hypoechoic nodules (regenerative nodules of cirrhotic liver). No ascites.\n\nDiagnosis: Primary biliary cholangitis (PBC).\n\nManagement: Hepatology consultation. Ursodeoxycholic acid (13–15 mg/kg/day). Obeticholic acid, fibrates if inadequate response. Pruritus: warm baths, antihistamine, cholestyramine; if refractory: naltrexone, rifampin, liver transplant. Screen for osteoporosis, calcium & vitamin D. EGD for varices. US every 6 months for HCC. HAV & HBV vaccination. Liver transplant for decompensated cirrhosis, HCC, refractory pruritus.\n\nTeaching Points: <span class="highlight">AMA is the most specific autoantibody for PBC (90–95% sensitivity, 98% specificity)</span>. UDCA is first-line therapy. PBC is associated with other autoimmune diseases (Sjögren, RA, thyroiditis).`
+                }
+            };
+
+            // ============================================================
+            // RAW DATA
+            // ============================================================
+            const RAW_DATA = {
+                2024: {
+                    "Day 1": [
+                        { num: "01", title: "SCA + medication-induced pancytopenia", status: "RELATED", system: "Haematology", detailed: true },
+                        { num: "02", title: "Ulcerative colitis", status: "MATCHED", system: "GI", detailed: true },
+                        { num: "03", title: "Rheumatoid arthritis", status: "MATCHED", system: "Rheumatology", detailed: true },
+                        { num: "04", title: "Ventricular tachycardia, VAP and ARDS", status: "RELATED", system: "Cardiology", detailed: true },
+                        { num: "05", title: "Stroke", status: "MATCHED", system: "Neurology", detailed: true },
+                        { num: "06", title: "Dengue hemorrhagic fever (DHF)", status: "MATCHED", system: "Infectious Disease", detailed: false },
+                        { num: "07", title: "Chest examination: COPD", status: "MATCHED", system: "Respiratory", detailed: false },
+                        { num: "08", title: "HHS progressing to urosepsis", status: "RELATED", system: "Endocrine", detailed: false }
+                    ],
+                    "Day 2": [
+                        { num: "01", title: "Immune thrombocytopenia (ITP)", status: "MATCHED", system: "Haematology", detailed: true },
+                        { num: "02", title: "Chronic hepatitis B", status: "MATCHED", system: "GI", detailed: true },
+                        { num: "03", title: "Pneumonia with pleural effusion", status: "MATCHED", system: "Respiratory", detailed: false },
+                        { num: "04", title: "Guillain-Barre syndrome", status: "MATCHED", system: "Neurology", detailed: false },
+                        { num: "05", title: "Pericarditis", status: "MATCHED", system: "Cardiology", detailed: false },
+                        { num: "06", title: "Sjogren syndrome with distal RTA", status: "MATCHED", system: "Rheumatology", detailed: false },
+                        { num: "07", title: "Colon cancer counselling", status: "MATCHED", system: "GI", detailed: false },
+                        { num: "08", title: "Thyroid examination", status: "MATCHED", system: "Endocrine", detailed: false }
+                    ],
+                    "Day 3": [
+                        { num: "01", title: "DKA in the ER: detailed management", status: "MATCHED", system: "Endocrine", detailed: true },
+                        { num: "02", title: "ACS: assessment before cholecystectomy", status: "MATCHED", system: "Cardiology", detailed: false },
+                        { num: "03", title: "Bronchial asthma: outpatient case", status: "MATCHED", system: "Respiratory", detailed: false },
+                        { num: "04", title: "IgA nephropathy", status: "MATCHED", system: "Renal", detailed: true },
+                        { num: "05", title: "Gonorrhea arthritis + knee examination", status: "NOT FOUND", system: "Rheumatology", detailed: false },
+                        { num: "06", title: "Infective endocarditis: history and examination", status: "MATCHED", system: "Cardiology", detailed: true },
+                        { num: "07", title: "Cerebral venous thrombosis (CVT)", status: "MATCHED", system: "Neurology", detailed: false },
+                        { num: "08", title: "Crohn's disease", status: "MATCHED", system: "GI", detailed: false }
+                    ],
+                    "Day 4": [
+                        { num: "01", title: "Valvular AF in pregnancy: rheumatic MS", status: "MATCHED", system: "Cardiology", detailed: false },
+                        { num: "02", title: "Behcet disease: oral ulcers and rash", status: "RELATED", system: "Rheumatology", detailed: false },
+                        { num: "03", title: "H. pylori + full abdominal examination", status: "RELATED", system: "GI", detailed: false },
+                        { num: "04", title: "AML or APML: fever, bruising and epistaxis", status: "MATCHED", system: "Haematology", detailed: false },
+                        { num: "05", title: "Hyponatremia / SIADH", status: "MATCHED", system: "Endocrine", detailed: false },
+                        { num: "06", title: "HIV: history, investigations and counselling", status: "RELATED", system: "Infectious Disease", detailed: false },
+                        { num: "07", title: "Pheochromocytoma: young-onset hypertension", status: "MATCHED", system: "Endocrine", detailed: false },
+                        { num: "08", title: "Atypical pneumonia / Mycoplasma", status: "RELATED", system: "Respiratory", detailed: false }
+                    ],
+                    "Day 5": [
+                        { num: "01", title: "Solitary pulmonary nodule", status: "MATCHED", system: "Respiratory", detailed: false },
+                        { num: "02", title: "Primary biliary cholangitis (PBC)", status: "MATCHED", system: "GI", detailed: true },
+                        { num: "03", title: "New diabetes diagnosis: counselling", status: "RELATED", system: "Endocrine", detailed: false },
+                        { num: "04", title: "Facial palsy + CN III, IV, VI and VII examination", status: "RELATED", system: "Neurology", detailed: false },
+                        { num: "05", title: "Symptomatic bradycardia with NSTEMI", status: "RELATED", system: "Cardiology", detailed: false },
+                        { num: "06", title: "HIV with cryptococcal infection", status: "NOT FOUND", system: "Infectious Disease", detailed: false },
+                        { num: "07", title: "Granulomatosis with polyangiitis (GPA)", status: "MATCHED", system: "Rheumatology", detailed: true },
+                        { num: "08", title: "Interstitial lung disease (ILD)", status: "MATCHED", system: "Respiratory", detailed: false }
+                    ],
+                    "Day 6": [
+                        { num: "01", title: "Septic shock secondary to UTI", status: "MATCHED", system: "Infectious Disease", detailed: true },
+                        { num: "02", title: "Visceral leishmaniasis / lymphoma?", status: "RELATED", system: "Haematology", detailed: false },
+                        { num: "03", title: "Pulmonary tuberculosis", status: "MATCHED", system: "Respiratory", detailed: true },
+                        { num: "04", title: "Pre-renal acute kidney injury", status: "NOT FOUND", system: "Renal", detailed: false },
+                        { num: "05", title: "Hypocalcemia after thyroidectomy", status: "MATCHED", system: "Endocrine", detailed: false },
+                        { num: "06", title: "Anterior / lateral myocardial infarction", status: "MATCHED", system: "Cardiology", detailed: true },
+                        { num: "07", title: "NASH presenting with ascites", status: "NOT FOUND", system: "GI", detailed: false }
+                    ]
+                },
+                2023: {
+                    "Day 1": [
+                        { num: "01", title: "SOE Meningitis", status: "RELATED", system: "Neurology", detailed: false },
+                        { num: "02", title: "SOE Acute interstitial nephritis (AIN)", status: "RELATED", system: "Renal", detailed: false },
+                        { num: "03", title: "SOE NASH", status: "NOT FOUND", system: "GI", detailed: false },
+                        { num: "04", title: "SOE Brucellosis", status: "MATCHED", system: "Infectious Disease", detailed: false },
+                        { num: "05", title: "SOE Optic neuritis / multiple sclerosis", status: "MATCHED", system: "Neurology", detailed: false },
+                        { num: "06", title: "SOE Secondary hypertension: hyperaldosteronism", status: "MATCHED", system: "Endocrine", detailed: false },
+                        { num: "07", title: "OSCE Aortic stenosis + cardiovascular examination", status: "RELATED", system: "Cardiology", detailed: false },
+                        { num: "08", title: "OSCE ABPA + chest examination", status: "NOT FOUND", system: "Respiratory", detailed: false }
+                    ],
+                    "Day 2": [
+                        { num: "01", title: "SOE Graves' disease", status: "MATCHED", system: "Endocrine", detailed: false },
+                        { num: "02", title: "SOE Polymyositis", status: "RELATED", system: "Rheumatology", detailed: false },
+                        { num: "03", title: "SOE HIV with Pneumocystis pneumonia (PCP)", status: "MATCHED", system: "Infectious Disease", detailed: false },
+                        { num: "04", title: "SOE Autoimmune hemolytic anemia (AIHA)", status: "MATCHED", system: "Haematology", detailed: false },
+                        { num: "05", title: "SOE Cerebral malaria", status: "NOT FOUND", system: "Infectious Disease", detailed: false },
+                        { num: "06", title: "SOE Minimal change disease", status: "MATCHED", system: "Renal", detailed: false },
+                        { num: "07", title: "OSCE Esophageal cancer: history and communication", status: "MATCHED", system: "GI", detailed: false },
+                        { num: "08", title: "OSCE Falls risk: full neurological and MSK examination", status: "RELATED", system: "Neurology", detailed: false }
+                    ],
+                    "Day 3": [
+                        { num: "01", title: "SOE Gonococcal urethritis", status: "MATCHED", system: "Infectious Disease", detailed: false },
+                        { num: "02", title: "SOE Hypernatremia following gastroenteritis", status: "RELATED", system: "Endocrine", detailed: false },
+                        { num: "03", title: "SOE Celiac disease", status: "MATCHED", system: "GI", detailed: false },
+                        { num: "04", title: "SOE Diabetic ketoacidosis", status: "MATCHED", system: "Endocrine", detailed: true },
+                        { num: "05", title: "SOE Aortic dissection", status: "MATCHED", system: "Cardiology", detailed: false },
+                        { num: "06", title: "SOE SCA + febrile nonhemolytic transfusion reaction", status: "RELATED", system: "Haematology", detailed: false },
+                        { num: "07", title: "OSCE Posterior chest examination + PFT findings", status: "RELATED", system: "Respiratory", detailed: false },
+                        { num: "08", title: "OSCE Ankylosing spondylitis: back examination", status: "MATCHED", system: "Rheumatology", detailed: false }
+                    ],
+                    "Day 4": [
+                        { num: "01", title: "SOE Thrombotic thrombocytopenic purpura (TTP)", status: "MATCHED", system: "Haematology", detailed: false },
+                        { num: "02", title: "SOE Abdominal tuberculosis", status: "MATCHED", system: "GI", detailed: false },
+                        { num: "03", title: "SOE Pneumonia + complicated parapneumonic effusion", status: "RELATED", system: "Respiratory", detailed: false },
+                        { num: "04", title: "SOE Primary hyperparathyroidism", status: "NOT FOUND", system: "Endocrine", detailed: false },
+                        { num: "05", title: "SOE Hypertrophic obstructive cardiomyopathy (HOCM)", status: "MATCHED", system: "Cardiology", detailed: false },
+                        { num: "06", title: "SOE Adrenal incidentaloma with Cushing syndrome", status: "RELATED", system: "Endocrine", detailed: false },
+                        { num: "07", title: "OSCE SLE + hand examination", status: "RELATED", system: "Rheumatology", detailed: false },
+                        { num: "08", title: "OSCE Transient ischemic attack: counselling", status: "RELATED", system: "Neurology", detailed: false }
+                    ],
+                    "Day 5": [
+                        { num: "01", title: "SOE Colon cancer", status: "MATCHED", system: "GI", detailed: false },
+                        { num: "02", title: "SOE Secondary hypertension: hyperaldosteronism", status: "MATCHED", system: "Endocrine", detailed: false },
+                        { num: "03", title: "SOE Infective endocarditis", status: "MATCHED", system: "Cardiology", detailed: false },
+                        { num: "04", title: "SOE SCA with painful crisis", status: "MATCHED", system: "Haematology", detailed: false },
+                        { num: "05", title: "SOE Pneumocystis pneumonia in HIV", status: "MATCHED", system: "Infectious Disease", detailed: false },
+                        { num: "06", title: "OSCE HCV cirrhosis + ascites: abdominal examination", status: "RELATED", system: "GI", detailed: false },
+                        { num: "07", title: "OSCE T2DM: counselling, management and prevention", status: "RELATED", system: "Endocrine", detailed: false },
+                        { num: "08", title: "OSCE Stroke + motor neurological examination", status: "RELATED", system: "Neurology", detailed: false }
+                    ],
+                    "Day 6": [
+                        { num: "01", title: "SOE Bloody diarrhea / inflammatory bowel disease", status: "MATCHED", system: "GI", detailed: false },
+                        { num: "02", title: "SOE BP 180/105: renal artery stenosis", status: "MATCHED", system: "Renal", detailed: false },
+                        { num: "03", title: "SOE Atrial fibrillation with HTN, DM and CKD", status: "MATCHED", system: "Cardiology", detailed: false },
+                        { num: "04", title: "SOE Amenorrhea and palpitations: thyrotoxicosis", status: "RELATED", system: "Endocrine", detailed: false },
+                        { num: "05", title: "SOE Meningococcal meningitis", status: "NOT FOUND", system: "Infectious Disease", detailed: false },
+                        { num: "06", title: "SOE Systemic sclerosis, Raynaud phenomenon and ILD", status: "MATCHED", system: "Rheumatology", detailed: false },
+                        { num: "07", title: "OSCE Community-acquired pneumonia + back examination", status: "RELATED", system: "Respiratory", detailed: false },
+                        { num: "08", title: "OSCE PCKD with HTN/CKD: examination and family advice", status: "RELATED", system: "Renal", detailed: false }
+                    ]
+                }
+            };
+
+            // Build STATIONS
+            for (const year of [2024, 2023]) {
+                for (const dayKey of Object.keys(RAW_DATA[year])) {
+                    const dayNum = dayKey.replace("Day ", "");
+                    for (const item of RAW_DATA[year][dayKey]) {
+                        const stationId = `${year}-D${dayNum}-${item.num}`;
+                        let detailedData = DETAILED_STATIONS[stationId];
+                        let station;
+                        if (detailedData) {
+                            station = {
+                                id: stationId, num: item.num, title: detailedData.title,
+                                year: year, day: dayNum, status: detailedData.status || item.status,
+                                system: detailedData.system || item.system, detailed: true,
+                                brief: detailedData.brief, steps: detailedData.steps,
+                                modelAnswer: detailedData.modelAnswer
+                            };
+                        } else {
+                            station = makeStation(item.num, item.title, year, dayNum, item.status, item.system, item.detailed, null);
+                            station.id = stationId;
+                            station.modelAnswer = `**Model Answer: ${item.title}**\n\nThis is a ${item.status} station for "${item.title}" (${item.system}).\n\n**History:** Focus on relevant symptoms, onset, progression, associated features, and risk factors.\n\n**Examination:** Perform a focused examination of the relevant system, including general inspection and vital signs.\n\n**Investigations:** Order baseline bloods, targeted imaging, and specific tests as indicated.\n\n**Differential Diagnosis:** Consider the most likely diagnosis and key life-threatening alternatives.\n\n**Management:** Stabilize the patient, initiate specific therapy, provide supportive care, and refer to specialist teams as needed.\n\n*Note: This station is classified as ${item.status}. The source material does not contain a fully detailed interactive checklist for this specific station.*`;
+                        }
+                        STATIONS.push(station);
+                    }
+                }
+            }
+
+            // ============================================================
+            // STATE & STORAGE
+            // ============================================================
+            const STORAGE_KEY = 'osce_progress';
+            let completedStations = new Set();
+
+            function loadProgress() {
+                try {
+                    const saved = sessionStorage.getItem(STORAGE_KEY);
+                    if (saved) completedStations = new Set(JSON.parse(saved));
+                } catch (e) { console.warn(e); }
+                updateProgressUI();
+            }
+
+            function saveProgress() {
+                try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify([...completedStations])); }
+                catch (e) { console.warn(e); }
+                updateProgressUI();
+            }
+
+            function updateProgressUI() {
+                const count = completedStations.size;
+                const total = STATIONS.length;
+                const pct = total > 0 ? (count / total) * 100 : 0;
+                const homeCounter = document.getElementById('homeProgressCount');
+                if (homeCounter) homeCounter.textContent = count;
+                const barFill = document.getElementById('progressBarFill');
+                if (barFill) barFill.style.width = pct + '%';
+                const progressText = document.getElementById('progressText');
+                if (progressText) progressText.textContent = `${count} of ${total} stations completed`;
+                renderProgressList();
+                document.querySelectorAll('.station-card').forEach(card => {
+                    const id = card.dataset.stationId;
+                    if (completedStations.has(id)) card.classList.add('completed');
+                    else card.classList.remove('completed');
+                });
+            }
+
+            // ============================================================
+            // NAVIGATION
+            // ============================================================
+            const navPills = document.querySelectorAll('.nav-pill');
+            const views = document.querySelectorAll('.view');
+
+            function switchView(viewName) {
+                views.forEach(v => v.classList.remove('active'));
+                navPills.forEach(p => p.classList.remove('active'));
+                const targetView = document.getElementById(`view-${viewName}`);
+                if (targetView) targetView.classList.add('active');
+                const targetPill = document.querySelector(`.nav-pill[data-view="${viewName}"]`);
+                if (targetPill) targetPill.classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            navPills.forEach(pill => {
+                pill.addEventListener('click', () => {
+                    const viewName = pill.dataset.view;
+                    if (viewName === 'station') return;
+                    switchView(viewName);
+                    if (viewName === 'progress') renderProgressList();
+                });
+            });
+
+            // ============================================================
+            // CASES VIEW
+            // ============================================================
+            const casesList = document.getElementById('casesList');
+            const yearFilter = document.getElementById('yearFilter');
+            const statusFilter = document.getElementById('statusFilter');
+
+            function renderCases() {
+                const yearVal = yearFilter.value;
+                const statusVal = statusFilter.value;
+                let filtered = STATIONS.filter(s => {
+                    if (yearVal !== 'all' && String(s.year) !== yearVal) return false;
+                    if (statusVal !== 'all' && s.status !== statusVal) return false;
+                    return true;
+                });
+                const grouped = {};
+                filtered.forEach(s => {
+                    const yearKey = String(s.year);
+                    if (!grouped[yearKey]) grouped[yearKey] = {};
+                    const dayKey = `Day ${s.day}`;
+                    if (!grouped[yearKey][dayKey]) grouped[yearKey][dayKey] = [];
+                    grouped[yearKey][dayKey].push(s);
+                });
+                let html = '';
+                for (const yearKey of ['2024', '2023']) {
+                    if (!grouped[yearKey]) continue;
+                    html += `<div class="year-group"><h3>${yearKey}</h3>`;
+                    const dayOrder = Object.keys(grouped[yearKey]).sort((a, b) => parseInt(a.replace('Day ', '')) - parseInt(b.replace('Day ', '')));
+                    for (const dayKey of dayOrder) {
+                        html += `<div class="day-group"><h4>${dayKey}</h4><div class="station-grid">`;
+                        for (const station of grouped[yearKey][dayKey]) {
+                            const completedClass = completedStations.has(station.id) ? 'completed' : '';
+                            const statusClass = station.status === 'MATCHED' ? 'matched' : station.status === 'RELATED' ? 'related' : 'notfound';
+                            const detailedBadge = station.detailed ? `<span class="badge detailed">Detailed</span>` : '';
+                            html += `<div class="station-card ${completedClass}" data-station-id="${station.id}" onclick="window.openStation('${station.id}')">
+                                <div class="station-num">Station ${station.num}</div>
+                                <div class="station-title">${station.title}</div>
+                                <div class="station-meta">
+                                    <span class="badge ${statusClass}">${station.status}</span>
+                                    <span class="badge" style="background:#e0e0e0;color:#555;">${station.system}</span>
+                                    ${detailedBadge}
+                                </div>
+                            </div>`;
+                        }
+                        html += `</div></div>`;
+                    }
+                    html += `</div>`;
+                }
+                if (html === '') html = `<p class="text-center" style="color:#888;padding:2rem;">No stations match the selected filters.</p>`;
+                casesList.innerHTML = html;
+            }
+
+            yearFilter.addEventListener('change', renderCases);
+            statusFilter.addEventListener('change', renderCases);
+
+            // ============================================================
+            // STATION VIEW
+            // ============================================================
+            let currentStation = null;
+            let currentStepIndex = 0;
+            let timerInterval = null;
+            let timerSeconds = 480;
+            let stepAnswers = {};
+            let stepChecked = {};
+            let isMockMode = false;
+            let mockStations = [];
+            let mockCurrentIndex = 0;
+            let mockGlobalTimer = null;
+            let mockGlobalSeconds = 3600;
+            let mockCompleted = [];
+
+            const stationViewTitle = document.getElementById('stationViewTitle');
+            const timerDisplay = document.getElementById('timerDisplay');
+            const stepIndicators = document.getElementById('stepIndicators');
+            const stationContent = document.getElementById('stationContent');
+            const modelAnswerBox = document.getElementById('modelAnswerBox');
+            const modelAnswerContent = document.getElementById('modelAnswerContent');
+            const btnBackToCases = document.getElementById('btnBackToCases');
+            const btnSpeakBrief = document.getElementById('btnSpeakBrief');
+            const btnSpeakQuestion = document.getElementById('btnSpeakQuestion');
+            const btnSpeakFeedback = document.getElementById('btnSpeakFeedback');
+            const btnFullPresentation = document.getElementById('btnFullPresentation');
+            const btnSpeakAnswer = document.getElementById('btnSpeakAnswer');
+            const btnStopAudio = document.getElementById('btnStopAudio');
+            const micStatus = document.getElementById('micStatus');
+            const transcriptBox = document.getElementById('transcriptBox');
+            const btnReadModelAnswer = document.getElementById('btnReadModelAnswer');
+            const mockBannerContainer = document.getElementById('mockBannerContainer');
+            const btnStartVoiceExaminer = document.getElementById('btnStartVoiceExaminer');
+            const btnStopVoiceExaminer = document.getElementById('btnStopVoiceExaminer');
+            const voiceStatus = document.getElementById('voiceStatus');
+            const voiceTranscript = document.getElementById('voiceTranscript');
+
+            const stepNames = ['History', 'Examination', 'Investigations', 'Diagnosis', 'Management'];
+            const stepKeys = ['history', 'examination', 'investigations', 'diagnosis', 'management'];
+
+            function startTimer() {
+                if (timerInterval) clearInterval(timerInterval);
+                timerSeconds = 480;
+                updateTimerDisplay();
+                timerInterval = setInterval(() => {
+                    timerSeconds--;
+                    updateTimerDisplay();
+                    if (timerSeconds <= 0) { clearInterval(timerInterval); timerInterval = null; }
+                }, 1000);
+            }
+
+            function updateTimerDisplay() {
+                const mins = Math.floor(timerSeconds / 60);
+                const secs = timerSeconds % 60;
+                timerDisplay.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                timerDisplay.className = 'timer-box';
+                if (timerSeconds > 240) timerDisplay.classList.add('green');
+                else if (timerSeconds > 120) timerDisplay.classList.add('gold');
+                else if (timerSeconds > 60) timerDisplay.classList.add('orange');
+                else timerDisplay.classList.add('red');
+                if (timerSeconds <= 0) { timerDisplay.textContent = 'EXPIRED'; timerDisplay.classList.add('red'); }
+            }
+
+            function startMockGlobalTimer() {
+                if (mockGlobalTimer) clearInterval(mockGlobalTimer);
+                mockGlobalSeconds = 3600;
+                updateMockGlobalDisplay();
+                mockGlobalTimer = setInterval(() => {
+                    mockGlobalSeconds--;
+                    updateMockGlobalDisplay();
+                    if (mockGlobalSeconds <= 0) { clearInterval(mockGlobalTimer); mockGlobalTimer = null; }
+                }, 1000);
+            }
+
+            function updateMockGlobalDisplay() {
+                const el = document.getElementById('mockGlobalTimer');
+                if (!el) return;
+                const mins = Math.floor(mockGlobalSeconds / 60);
+                const secs = mockGlobalSeconds % 60;
+                el.textContent = `⏱ ${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                if (mockGlobalSeconds < 600) el.classList.add('warning');
+                else el.classList.remove('warning');
+            }
+
+            function renderMockBanner() {
+                if (!isMockMode) { mockBannerContainer.innerHTML = ''; return; }
+                const stationNum = mockCurrentIndex + 1;
+                const total = mockStations.length;
+                const pct = (mockCurrentIndex / total) * 100;
+                mockBannerContainer.innerHTML = `
+                    <div class="mock-banner">
+                        <div>
+                            <h3>🎯 Mock Exam — Station ${stationNum} / ${total}</h3>
+                            <div class="mock-info"><span id="mockGlobalTimer">⏱ 60:00</span></div>
+                            <div class="mock-progress-bar"><div class="mock-progress-fill" style="width:${pct}%"></div></div>
+                        </div>
+                        <button class="btn btn-outline btn-sm" onclick="window.exitMockExam()">✕ Exit Mock Exam</button>
+                    </div>
+                `;
+            }
+
+            window.openStation = function(stationId) {
+                const station = STATIONS.find(s => s.id === stationId);
+                if (!station) return;
+                currentStation = station;
+                currentStepIndex = 0;
+                stepAnswers = {};
+                stepChecked = {};
+                startTimer();
+                stationViewTitle.textContent = `${station.title} (${station.status})`;
+                switchView('station');
+                renderMockBanner();
+                renderStepIndicators();
+                renderStep();
+                modelAnswerBox.classList.remove('show');
+                modelAnswerContent.textContent = '';
+                transcriptBox.textContent = 'Transcript will appear here...';
+                micStatus.textContent = 'Mic: Idle';
+                micStatus.className = 'mic-status';
+                voiceStatus.textContent = 'Status: Idle — press Start to begin';
+                voiceStatus.className = 'voice-status';
+                voiceTranscript.textContent = 'Your spoken answer will appear here...';
+            };
+
+            function renderStepIndicators() {
+                let html = '';
+                for (let i = 0; i < stepNames.length; i++) {
+                    let cls = 'step-indicator';
+                    if (i < currentStepIndex) cls += ' done';
+                    if (i === currentStepIndex) cls += ' active';
+                    html += `<div class="${cls}">${stepNames[i]}</div>`;
+                }
+                stepIndicators.innerHTML = html;
+            }
+
+            function renderStep() {
+                if (!currentStation) return;
+                const stepKey = stepKeys[currentStepIndex];
+                const stepData = currentStation.steps[stepKey];
+                if (!stepData) return;
+                const isChecked = stepChecked[stepKey] || false;
+                const selected = stepAnswers[stepKey] || [];
+                let optionsHtml = '';
+                for (let i = 0; i < stepData.options.length; i++) {
+                    const opt = stepData.options[i];
+                    let cls = 'option-item';
+                    if (selected.includes(i)) cls += ' selected';
+                    if (isChecked) {
+                        if (stepData.correct.includes(i)) cls += ' correct';
+                        else if (selected.includes(i)) cls += ' incorrect';
+                    }
+                    optionsHtml += `<label class="${cls}">
+                        <input type="checkbox" value="${i}" ${selected.includes(i) ? 'checked' : ''} ${isChecked ? 'disabled' : ''} onchange="window.toggleOption(${i})">
+                        <span>${opt}</span>
+                    </label>`;
+                }
+                let feedbackHtml = '';
+                if (isChecked && !isMockMode) {
+                    const allCorrect = stepData.correct.every(i => selected.includes(i)) && selected.every(i => stepData.correct.includes(i));
+                    const isCorrect = selected.length > 0 && allCorrect;
+                    feedbackHtml = `<div class="feedback-box show ${isCorrect ? 'correct-feedback' : 'incorrect-feedback'}">
+                        <strong>${isCorrect ? '✅ Correct!' : '❌ Review:'}</strong> ${stepData.feedback}
+                    </div>`;
+                } else if (isChecked && isMockMode) {
+                    feedbackHtml = `<div class="feedback-box show" style="background:#e3f2fd;border-left:4px solid #1565c0;color:#1565c0;">
+                        <strong>ℹ️ Mock Exam Mode:</strong> Feedback is hidden until the end of the exam.
+                    </div>`;
+                }
+                const isLastStep = currentStepIndex === stepNames.length - 1;
+                const btnLabel = isChecked ? (isLastStep ? (isMockMode ? 'Next Station →' : 'Finish Station') : 'Next Step →') : 'Check Answer';
+                let btnAction;
+                if (isChecked) {
+                    if (isLastStep) btnAction = isMockMode ? 'window.nextMockStation()' : 'window.finishStation()';
+                    else btnAction = 'window.nextStep()';
+                } else btnAction = 'window.checkAnswer()';
+                const btnClass = isChecked ? 'btn-primary' : 'btn-gold';
+                stationContent.innerHTML = `
+                    <div class="step-content">
+                        <h3>${stepNames[currentStepIndex]}</h3>
+                        <p class="question-text">${stepData.question}</p>
+                        <div class="options-list">${optionsHtml}</div>
+                        ${feedbackHtml}
+                        <div class="btn-group">
+                            <button class="btn ${btnClass}" onclick="${btnAction}">${btnLabel}</button>
+                        </div>
+                    </div>
+                `;
+                renderStepIndicators();
+            }
+
+            window.toggleOption = function(index) {
+                const stepKey = stepKeys[currentStepIndex];
+                if (!stepAnswers[stepKey]) stepAnswers[stepKey] = [];
+                const arr = stepAnswers[stepKey];
+                const pos = arr.indexOf(index);
+                if (pos > -1) arr.splice(pos, 1);
+                else arr.push(index);
+                renderStep();
+            };
+
+            window.checkAnswer = function() {
+                const stepKey = stepKeys[currentStepIndex];
+                if (!stepAnswers[stepKey] || stepAnswers[stepKey].length === 0) {
+                    alert('Please select at least one option before checking.');
+                    return;
+                }
+                stepChecked[stepKey] = true;
+                renderStep();
+            };
+
+            window.nextStep = function() {
+                if (currentStepIndex < stepNames.length - 1) {
+                    currentStepIndex++;
+                    renderStep();
+                }
+            };
+
+            window.finishStation = function() {
+                if (currentStation) {
+                    completedStations.add(currentStation.id);
+                    saveProgress();
+                }
+                if (currentStation && currentStation.modelAnswer) {
+                    modelAnswerContent.innerHTML = currentStation.modelAnswer.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/<span class="highlight">(.*?)<\/span>/g, '<span class="highlight">$1</span>');
+                    modelAnswerBox.classList.add('show');
+                }
+                stationContent.innerHTML = `
+                    <div class="step-content" style="text-align:center;padding:2rem;">
+                        <h3>🎉 Station Complete!</h3>
+                        <p>Review the Model Answer below and practise your presentation aloud.</p>
+                        <div class="btn-group" style="justify-content:center;">
+                            <button class="btn btn-gold" onclick="window.openStation('${currentStation.id}')">🔄 Restart Station</button>
+                            <button class="btn btn-outline" onclick="window.switchToCases()">← Back to Cases</button>
+                        </div>
+                    </div>
+                `;
+                stepIndicators.innerHTML = stepNames.map(n => `<div class="step-indicator done">${n}</div>`).join('');
+                updateProgressUI();
+                if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+            };
+
+            window.switchToCases = function() {
+                switchView('cases');
+                renderCases();
+            };
+
+            btnBackToCases.addEventListener('click', () => {
+                if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+                switchView('cases');
+                renderCases();
+            });
+
+            // ============================================================
+            // TTS
+            // ============================================================
+            function speakText(text) {
+                if (!window.speechSynthesis) { alert('Text-to-speech not supported.'); return; }
+                window.speechSynthesis.cancel();
+                const u = new SpeechSynthesisUtterance(text);
+                u.rate = 0.95; u.pitch = 1; u.lang = 'en-US';
+                window.speechSynthesis.speak(u);
+            }
+
+            btnSpeakBrief.addEventListener('click', () => { if (currentStation) speakText(currentStation.brief); });
+            btnSpeakQuestion.addEventListener('click', () => {
+                if (!currentStation) return;
+                const stepKey = stepKeys[currentStepIndex];
+                const stepData = currentStation.steps[stepKey];
+                if (stepData) speakText(stepData.question);
+            });
+            btnSpeakFeedback.addEventListener('click', () => {
+                if (!currentStation) return;
+                const stepKey = stepKeys[currentStepIndex];
+                const stepData = currentStation.steps[stepKey];
+                if (stepData) speakText(stepData.feedback.replace(/<[^>]*>/g, ''));
+            });
+            btnFullPresentation.addEventListener('click', () => {
+                if (currentStation && currentStation.modelAnswer) speakText(currentStation.modelAnswer.replace(/<[^>]*>/g, '').replace(/\*\*/g, ''));
+            });
+            btnReadModelAnswer.addEventListener('click', () => {
+                if (currentStation && currentStation.modelAnswer) speakText(currentStation.modelAnswer.replace(/<[^>]*>/g, '').replace(/\*\*/g, ''));
+            });
+            btnStopAudio.addEventListener('click', () => {
+                if (window.speechSynthesis) window.speechSynthesis.cancel();
+                if (recognition && recognition.state === 'listening') recognition.stop();
+                micStatus.textContent = 'Mic: Idle';
+                micStatus.className = 'mic-status';
+            });
+
+            // ============================================================
+            // SPEECH RECOGNITION
+            // ============================================================
+            let recognition = null;
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRecognition();
+                recognition.continuous = false;
+                recognition.interimResults = true;
+                recognition.lang = 'en-US';
+                recognition.onstart = function() {
+                    micStatus.textContent = 'Mic: Listening...';
+                    micStatus.className = 'mic-status listening';
+                    transcriptBox.textContent = 'Listening...';
+                };
+                recognition.onresult = function(event) {
+                    let transcript = '';
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        transcript += event.results[i][0].transcript;
+                    }
+                    transcriptBox.textContent = transcript;
+                };
+                recognition.onerror = function(event) {
+                    micStatus.textContent = 'Mic: Error';
+                    micStatus.className = 'mic-status';
+                    transcriptBox.textContent = 'Error: ' + event.error;
+                };
+                recognition.onend = function() {
+                    micStatus.textContent = 'Mic: Idle';
+                    micStatus.className = 'mic-status';
+                };
+            }
+
+            btnSpeakAnswer.addEventListener('click', () => {
+                if (!recognition) { alert('Speech recognition not supported. Use Chrome or Edge.'); return; }
+                try { recognition.start(); } catch (e) { recognition.stop(); setTimeout(() => recognition.start(), 200); }
+            });
+
+            // ============================================================
+            // VOICE EXAMINER MODE
+            // ============================================================
+            let voiceExaminerActive = false;
+
+            btnStartVoiceExaminer.addEventListener('click', () => {
+                if (!currentStation) return;
+                if (!window.speechSynthesis || !recognition) {
+                    alert('Voice Examiner requires speech synthesis and recognition. Use Chrome or Edge.');
+                    return;
+                }
+                voiceExaminerActive = true;
+                runVoiceExaminerSequence();
+            });
+
+            btnStopVoiceExaminer.addEventListener('click', () => {
+                voiceExaminerActive = false;
+                if (window.speechSynthesis) window.speechSynthesis.cancel();
+                if (recognition && recognition.state === 'listening') recognition.stop();
+                voiceStatus.textContent = 'Status: Stopped';
+                voiceStatus.className = 'voice-status';
+            });
+
+            function setVoiceStatus(text, cls) {
+                voiceStatus.textContent = 'Status: ' + text;
+                voiceStatus.className = 'voice-status ' + (cls || '');
+            }
+
+            function runVoiceExaminerSequence() {
+                if (!voiceExaminerActive || !currentStation) return;
+                const stepKey = stepKeys[currentStepIndex];
+                const stepData = currentStation.steps[stepKey];
+                const brief = currentStation.brief;
+                const question = stepData ? stepData.question : '';
+                const feedback = stepData ? stepData.feedback.replace(/<[^>]*>/g, '') : '';
+
+                setVoiceStatus('Reading the scenario...', 'speaking');
+                window.speechSynthesis.cancel();
+                const u1 = new SpeechSynthesisUtterance(brief);
+                u1.rate = 0.95; u1.lang = 'en-US';
+                u1.onend = () => {
+                    if (!voiceExaminerActive) return;
+                    setVoiceStatus('Reading the question...', 'speaking');
+                    const u2 = new SpeechSynthesisUtterance(question);
+                    u2.rate = 0.95; u2.lang = 'en-US';
+                    u2.onend = () => {
+                        if (!voiceExaminerActive) return;
+                        setVoiceStatus('Listening to your answer...', 'listening');
+                        voiceTranscript.textContent = 'Listening...';
+                        try { recognition.start(); } catch (e) { recognition.stop(); }
+                    };
+                    window.speechSynthesis.speak(u2);
+                };
+                window.speechSynthesis.speak(u1);
+            }
+
+            if (recognition) {
+                const originalOnResult = recognition.onresult;
+                recognition.onresult = function(event) {
+                    let transcript = '';
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        transcript += event.results[i][0].transcript;
+                    }
+                    voiceTranscript.textContent = transcript;
+                    transcriptBox.textContent = transcript;
+                };
+                const originalOnEnd = recognition.onend;
+                recognition.onend = function() {
+                    micStatus.textContent = 'Mic: Idle';
+                    micStatus.className = 'mic-status';
+                    if (voiceExaminerActive) {
+                        setVoiceStatus('Reading the feedback...', 'speaking');
+                        const stepKey = stepKeys[currentStepIndex];
+                        const stepData = currentStation.steps[stepKey];
+                        const feedback = stepData ? stepData.feedback.replace(/<[^>]*>/g, '') : '';
+                        const u = new SpeechSynthesisUtterance('Feedback: ' + feedback);
+                        u.rate = 0.95; u.lang = 'en-US';
+                        u.onend = () => {
+                            if (!voiceExaminerActive) return;
+                            setVoiceStatus('Finished. Press Start to repeat or go to the next step.', 'done');
+                        };
+                        window.speechSynthesis.speak(u);
+                    }
+                };
+            }
+
+            // ============================================================
+            // MOCK EXAM MODE
+            // ============================================================
+            let mockStationIds = [];
+
+            window.startMockExam = function() {
+                const shuffled = [...STATIONS].sort(() => Math.random() - 0.5);
+                mockStationIds = shuffled.slice(0, 8).map(s => s.id);
+                mockStations = mockStationIds.map(id => STATIONS.find(s => s.id === id));
+                mockCurrentIndex = 0;
+                mockCompleted = [];
+                isMockMode = true;
+                startMockGlobalTimer();
+                switchView('station');
+                openMockStation(mockCurrentIndex);
+            };
+
+            function openMockStation(index) {
+                const station = mockStations[index];
+                if (!station) { finishMockExam(); return; }
+                currentStation = station;
+                currentStepIndex = 0;
+                stepAnswers = {};
+                stepChecked = {};
+                startTimer();
+                stationViewTitle.textContent = `${station.title} (${station.status})`;
+                switchView('station');
+                renderMockBanner();
+                renderStepIndicators();
+                renderStep();
+                modelAnswerBox.classList.remove('show');
+                modelAnswerContent.textContent = '';
+                transcriptBox.textContent = 'Transcript will appear here...';
+                micStatus.textContent = 'Mic: Idle';
+                micStatus.className = 'mic-status';
+                voiceStatus.textContent = 'Status: Idle — press Start to begin';
+                voiceStatus.className = 'voice-status';
+                voiceTranscript.textContent = 'Your spoken answer will appear here...';
+            }
+
+            window.nextMockStation = function() {
+                if (currentStation) {
+                    if (!mockCompleted.includes(currentStation.id)) {
+                        mockCompleted.push(currentStation.id);
+                    }
+                }
+                mockCurrentIndex++;
+                if (mockCurrentIndex >= mockStations.length) {
+                    finishMockExam();
+                    return;
+                }
+                openMockStation(mockCurrentIndex);
+            };
+
+            window.exitMockExam = function() {
+                if (!confirm('Exit the mock exam? Your answers so far will be recorded but the exam will end.')) return;
+                isMockMode = false;
+                if (mockGlobalTimer) { clearInterval(mockGlobalTimer); mockGlobalTimer = null; }
+                if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+                showMockReport(false);
+            };
+
+            function finishMockExam() {
+                isMockMode = false;
+                if (mockGlobalTimer) { clearInterval(mockGlobalTimer); mockGlobalTimer = null; }
+                if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+                mockCompleted.forEach(id => completedStations.add(id));
+                saveProgress();
+                showMockReport(true);
+            }
+
+            function showMockReport(completed) {
+                let html = `<div class="mock-report">
+                    <h2>🎯 Mock Exam Report</h2>
+                    <p>${completed ? 'Exam completed! Here is your performance summary:' : 'Exam exited early. Here is your progress so far:'}</p>
+                    <div class="report-grid">`;
+                mockStations.forEach((s, i) => {
+                    const done = mockCompleted.includes(s.id);
+                    html += `<div class="report-item ${done ? 'done' : ''}">
+                        <strong>Station ${i+1}:</strong> ${s.title}<br>
+                        <span class="badge ${s.status === 'MATCHED' ? 'matched' : s.status === 'RELATED' ? 'related' : 'notfound'}">${s.status}</span>
+                        ${done ? ' ✅' : ' ⏳'}
+                    </div>`;
+                });
+                html += `</div>
+                    <div class="btn-group mt-2" style="justify-content:center;">
+                        <button class="btn btn-gold" onclick="window.startMockExam()">🔄 Start New Mock Exam</button>
+                        <button class="btn btn-outline" onclick="window.switchToCases()">← Back to Cases</button>
+                    </div>
+                </div>`;
+                switchView('mock');
+                document.getElementById('mockActiveContainer').innerHTML = html;
+            }
+
+            // ============================================================
+            // FLASHCARDS
+            // ============================================================
+            const FLASHCARDS = [
+                { cat: 'Cardiology', q: 'What is the most common cause of acute pericarditis?', a: 'Viral infection (Coxsackie, echovirus).' },
+                { cat: 'Cardiology', q: 'What are the ECG findings in hyperkalemia?', a: 'Peaked T waves, widened QRS, prolonged PR, sine wave pattern in severe cases.' },
+                { cat: 'Cardiology', q: 'What is the gold standard for diagnosing cardiac sarcoidosis?', a: 'Cardiac MRI with late gadolinium enhancement (LGE) and FDG-PET for active inflammation.' },
+                { cat: 'Cardiology', q: 'What is the target INR for a mechanical mitral valve?', a: 'INR 2.5–3.5.' },
+                { cat: 'Respiratory', q: 'What is the classic CXR finding in COPD?', a: 'Hyperinflated lungs, flattened diaphragm, increased retrosternal air space.' },
+                { cat: 'Respiratory', q: 'What is the most common cause of community-acquired pneumonia?', a: 'Streptococcus pneumoniae.' },
+                { cat: 'Respiratory', q: 'What is the treatment for latent TB?', a: 'Isoniazid for 6–9 months, or rifampin for 4 months, or isoniazid + rifapentine weekly for 12 weeks.' },
+                { cat: 'Respiratory', q: 'What is the CURB-65 score used for?', a: 'Assessing severity of community-acquired pneumonia to determine site of care.' },
+                { cat: 'GI', q: 'What is the first-line treatment for acute severe ulcerative colitis?', a: 'IV corticosteroids (methylprednisolone 60 mg/day). If no response in 3 days, consider infliximab or colectomy.' },
+                { cat: 'GI', q: 'What is the most common cause of upper GI bleeding?', a: 'Peptic ulcer disease.' },
+                { cat: 'GI', q: 'What is the classic presentation of primary biliary cholangitis?', a: 'Middle-aged woman with pruritus, fatigue, cholestatic jaundice, and positive AMA.' },
+                { cat: 'GI', q: 'What is the diagnostic test for celiac disease?', a: 'Anti-tissue transglutaminase IgA (anti-TTG IgA) with total IgA level. Duodenal biopsy confirms.' },
+                { cat: 'Endocrine', q: 'What are the diagnostic criteria for DKA?', a: 'Glucose >250 mg/dL, pH <7.3, HCO3 <18 mEq/L, and ketonemia/ketonuria.' },
+                { cat: 'Endocrine', q: 'What is the first-line treatment for Graves disease?', a: 'Antithyroid drugs (methimazole or PTU), beta-blockers, radioactive iodine, or surgery.' },
+                { cat: 'Endocrine', q: 'What is the most common cause of Cushing syndrome?', a: 'Exogenous steroid use.' },
+                { cat: 'Neurology', q: 'What is the time window for IV thrombolysis in acute ischemic stroke?', a: 'Up to 4.5 hours from last known well time.' },
+                { cat: 'Neurology', q: 'What is the classic triad of Miller-Fisher syndrome?', a: 'Ophthalmoplegia, ataxia, areflexia (anti-GQ1b antibody).' },
+                { cat: 'Neurology', q: 'What is the most common cause of cerebral venous thrombosis?', a: 'Postpartum state, oral contraceptives, thrombophilia, dehydration, infection.' },
+                { cat: 'Haematology', q: 'What is the first-line treatment for immune thrombocytopenia (ITP) with bleeding?', a: 'IVIG, corticosteroids, or anti-D immunoglobulin. Platelet transfusion only for life-threatening bleeding.' },
+                { cat: 'Haematology', q: 'What is the hallmark of TTP?', a: 'Microangiopathic hemolytic anemia, thrombocytopenia, neurological symptoms, renal impairment, fever. ADAMTS13 deficiency.' },
+                { cat: 'Haematology', q: 'What is the treatment for TTP?', a: 'Therapeutic plasma exchange (TPE). Steroids, rituximab, caplacizumab for refractory cases.' },
+                { cat: 'Rheumatology', q: 'What is the most specific antibody for rheumatoid arthritis?', a: 'Anti-cyclic citrullinated peptide (anti-CCP), specificity ~95%.' },
+                { cat: 'Rheumatology', q: 'What is the classic presentation of granulomatosis with polyangiitis (GPA)?', a: 'Upper respiratory (sinusitis, saddle nose), lower respiratory (hemoptysis, nodules), and renal involvement. C-ANCA positive.' },
+                { cat: 'Rheumatology', q: 'What is the first-line treatment for acute gout?', a: 'NSAIDs, colchicine, or corticosteroids.' },
+                { cat: 'Infectious Disease', q: 'What is the most common cause of infectious endocarditis in IV drug users?', a: 'Staphylococcus aureus (tricuspid valve).' },
+                { cat: 'Infectious Disease', q: 'What is the treatment for Brucella endocarditis?', a: 'Doxycycline + rifampin + aminoglycoside for at least 6 months. Surgery for aortic root abscess.' },
+                { cat: 'Infectious Disease', q: 'What is the first-line treatment for Pneumocystis pneumonia (PCP)?', a: 'Trimethoprim-sulfamethoxazole (TMP-SMX). Add corticosteroids if PaO2 <70 mmHg.' },
+                { cat: 'Renal', q: 'What is the classic presentation of IgA nephropathy?', a: 'Gross hematuria 1–2 days after a URTI (synpharyngitic), with normal complement levels.' },
+                { cat: 'Renal', q: 'What is the most common cause of nephrotic syndrome in adults?', a: 'Focal segmental glomerulosclerosis (FSGS) in adults; minimal change disease in children.' },
+                { cat: 'General/OSCE', q: 'What does the WIPE mnemonic stand for?', a: 'Wash hands, Introduce yourself, Permission, Explain. Also: Position, Privacy, Exposure.' },
+                { cat: 'General/OSCE', q: 'What does SOCRATES stand for in pain history?', a: 'Site, Onset, Character, Radiation, Associated symptoms, Timing, Exacerbating/relieving factors, Severity.' }
+            ];
+
+            let flashcardOrder = [...FLASHCARDS];
+
+            function renderFlashcards() {
+                const catFilter = document.getElementById('flashcardCategory').value;
+                let filtered = flashcardOrder.filter(f => catFilter === 'all' || f.cat === catFilter);
+                const grid = document.getElementById('flashcardGrid');
+                if (filtered.length === 0) {
+                    grid.innerHTML = '<p class="text-center" style="color:#888;padding:2rem;">No flashcards in this category.</p>';
+                    return;
+                }
+                grid.innerHTML = filtered.map(f => `
+                    <div class="flashcard" onclick="this.classList.toggle('flipped')">
+                        <div class="flashcard-inner">
+                            <div class="flashcard-front">
+                                <div class="category">${f.cat}</div>
+                                <div class="question">${f.q}</div>
+                            </div>
+                            <div class="flashcard-back">
+                                <div class="answer">${f.a}</div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            document.getElementById('flashcardCategory').addEventListener('change', renderFlashcards);
+            document.getElementById('btnShuffleFlashcards').addEventListener('click', () => {
+                for (let i = flashcardOrder.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [flashcardOrder[i], flashcardOrder[j]] = [flashcardOrder[j], flashcardOrder[i]];
+                }
+                renderFlashcards();
+            });
+
+            // ============================================================
+            // TIPS
+            // ============================================================
+            const TIPS = [
+                { title: 'WIPE Opening', content: '<p>Start every station with <strong>WIPE</strong>:</p><ul><li><strong>W</strong>ash hands</li><li><strong>I</strong>ntroduce yourself</li><li><strong>P</strong>ermission</li><li><strong>E</strong>xplain</li></ul><p>Also ensure privacy, position, and exposure.</p>' },
+                { title: 'SOCRATES Pain History', content: '<ul><li><strong>S</strong>ite</li><li><strong>O</strong>nset</li><li><strong>C</strong>haracter</li><li><strong>R</strong>adiation</li><li><strong>A</strong>ssociated symptoms</li><li><strong>T</strong>iming</li><li><strong>E</strong>xacerbating/relieving</li><li><strong>S</strong>everity</li></ul>' },
+                { title: 'Time Management', content: '<p>8-minute stations: History 3–4 min, Examination 2–3 min, Investigations &amp; Diagnosis 1–2 min, Management 1–2 min.</p>' },
+                { title: 'Red Flags', content: '<ul><li>Chest pain: tearing (dissection), pleuritic (PE), crushing (ACS)</li><li>Headache: thunderclap (SAH), fever + neck stiffness (meningitis)</li><li>Abdominal pain: rigid abdomen (perforation)</li><li>Shortness of breath: stridor, silent chest</li></ul>' },
+                { title: 'Presentation Technique', content: '<p>Structure: Introduction → History → Examination → Investigations → Diagnosis → Management. Use signposting.</p>' },
+                { title: 'Common Pitfalls', content: '<ul><li>Forgetting to introduce yourself</li><li>Not washing hands</li><li>Examining through clothing</li><li>Forgetting vital signs</li><li>Not asking about red flags</li><li>Failing to safety-net</li></ul>' },
+                { title: 'Safety-Netting', content: '<p>Always end with safety advice: "If symptoms worsen, especially [red flag], return immediately." Provide written information and follow-up.</p>' },
+                { title: 'Sepsis Six', content: '<ol><li>Oxygen if needed</li><li>Blood cultures</li><li>IV antibiotics</li><li>IV fluids</li><li>Measure lactate</li><li>Measure urine output</li></ol>' },
+                { title: 'Verbal Answer Technique', content: '<p>Prioritise immediate life-saving steps first (ABC). Use triage language: "First I would...", "Then I would...". Mention guidelines.</p>' },
+                { title: 'Examination Sequence', content: '<p>Inspect → Palpate → Percuss → Auscultate. Always compare sides.</p>' }
+            ];
+
+            function renderTips() {
+                document.getElementById('tipsGrid').innerHTML = TIPS.map(t => `
+                    <div class="tip-card"><h3>${t.title}</h3>${t.content}</div>
+                `).join('');
+            }
+
+            // ============================================================
+            // PROGRESS
+            // ============================================================
+            function renderProgressList() {
+                const container = document.getElementById('progressList');
+                if (!container) return;
+                const sorted = [...STATIONS].sort((a, b) => {
+                    if (a.year !== b.year) return b.year - a.year;
+                    if (a.day !== b.day) return a.day - b.day;
+                    return parseInt(a.num) - parseInt(b.num);
+                });
+                container.innerHTML = sorted.map(s => {
+                    const done = completedStations.has(s.id);
+                    return `<div class="progress-item ${done ? 'done' : ''}">
+                        <span class="tick">${done ? '✓' : '○'}</span>
+                        <span class="p-title">${s.num}. ${s.title}</span>
+                        <span class="badge ${s.status === 'MATCHED' ? 'matched' : s.status === 'RELATED' ? 'related' : 'notfound'}" style="font-size:0.6rem;">${s.status}</span>
+                    </div>`;
+                }).join('');
+            }
+
+            document.getElementById('btnResetProgress').addEventListener('click', () => {
+                if (confirm('Reset all progress? This cannot be undone.')) {
+                    completedStations.clear();
+                    saveProgress();
+                    renderProgressList();
+                    renderCases();
+                }
+            });
+
+            // ============================================================
+            // MOCK START BUTTONS
+            // ============================================================
+            document.getElementById('btnStartMockFromView').addEventListener('click', () => window.startMockExam());
+
+            // ============================================================
+            // INIT
+            // ============================================================
+            function init() {
+                loadProgress();
+                renderCases();
+                renderFlashcards();
+                renderTips();
+                renderProgressList();
+                switchView('home');
+                navPills.forEach(pill => {
+                    pill.addEventListener('click', () => {
+                        const viewName = pill.dataset.view;
+                        if (viewName === 'station') return;
+                        switchView(viewName);
+                        if (viewName === 'progress') renderProgressList();
+                    });
+                });
+            }
+
+            init();
+
+        })();
+    </script>
+</body>
+</html>
